@@ -1,0 +1,63 @@
+--- MMLU Evaluation Summary ---
+Model Path: /home/zhangwj/Llama-3.1-8B
+Overall Accuracy: 0.6057
+
+--- Accuracy per Subject ---
+subject
+high_school_government_and_politics    0.870466
+us_foreign_policy                      0.860000
+sociology                              0.840796
+marketing                              0.820513
+medical_genetics                       0.820000
+high_school_psychology                 0.818349
+international_law                      0.809917
+high_school_world_history              0.805907
+world_religions                        0.795322
+miscellaneous                          0.794381
+high_school_us_history                 0.794118
+high_school_biology                    0.770968
+high_school_geography                  0.757576
+college_biology                        0.756944
+logical_fallacies                      0.748466
+professional_medicine                  0.742647
+human_sexuality                        0.740458
+nutrition                              0.738562
+management                             0.737864
+prehistory                             0.734568
+high_school_european_history           0.733333
+computer_security                      0.710000
+clinical_knowledge                     0.709434
+security_studies                       0.706122
+high_school_microeconomics             0.693277
+philosophy                             0.691318
+professional_psychology                0.681373
+astronomy                              0.677632
+jurisprudence                          0.675926
+moral_disputes                         0.673410
+anatomy                                0.659259
+human_aging                            0.641256
+high_school_macroeconomics             0.628205
+college_medicine                       0.606936
+high_school_computer_science           0.600000
+public_relations                       0.600000
+electrical_engineering                 0.586207
+business_ethics                        0.570000
+virology                               0.542169
+high_school_chemistry                  0.522167
+conceptual_physics                     0.510638
+college_computer_science               0.490000
+high_school_statistics                 0.481481
+professional_accounting                0.471631
+econometrics                           0.456140
+college_physics                        0.431373
+elementary_mathematics                 0.415344
+machine_learning                       0.410714
+professional_law                       0.408735
+college_chemistry                      0.400000
+high_school_physics                    0.397351
+formal_logic                           0.396825
+global_facts                           0.360000
+high_school_mathematics                0.337037
+abstract_algebra                       0.310000
+college_mathematics                    0.270000
+moral_scenarios                        0.248045

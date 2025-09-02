@@ -1,0 +1,7 @@
+{
+  "num_examples": 1319,
+  "format_rate": 0.025018953752843062,
+  "accuracy": 0.0037907505686125853,
+  "avg_reward": 0.0037907505686125853,
+  "results_path": "gsm8k_eval_results.jsonl"
+}

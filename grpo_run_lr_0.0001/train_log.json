@@ -1,0 +1,1002 @@
+[
+  {
+    "step": 1,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.00530705079605762
+  },
+  {
+    "step": 2,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0075815011372251705
+  },
+  {
+    "step": 3,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.004548900682335102
+  },
+  {
+    "step": 4,
+    "mean_loss": 0.00013028470675635617,
+    "train_reward_mean": 0.00390625,
+    "train_reward_frac_ones": 0.00390625,
+    "num_reward_ones": 1,
+    "num_reward_zeros": 255,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 5,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 6,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 7,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 8,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 9,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 10,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 11,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 12,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 13,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 14,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 15,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 16,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 17,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 18,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 19,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 20,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 21,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 22,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 23,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 24,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 25,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 26,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 27,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 28,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 29,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 30,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 31,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 32,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 33,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 34,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 35,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 36,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 37,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 38,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 39,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 40,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 41,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 42,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 43,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 44,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 45,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 46,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 47,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 48,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 49,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 50,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 51,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 52,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 53,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 54,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 55,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 56,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 57,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 58,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 59,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 60,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 61,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 62,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 63,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 64,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 65,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 66,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 67,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 68,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 69,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 70,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 71,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 72,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 73,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 74,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 75,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 76,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 77,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 78,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 79,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 80,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 81,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 82,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 83,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 84,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 85,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 86,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 87,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 88,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 89,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 90,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 91,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 92,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 93,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 94,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 95,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 96,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 97,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 98,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 99,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  },
+  {
+    "step": 100,
+    "mean_loss": 0.0,
+    "train_reward_mean": 0.0,
+    "train_reward_frac_ones": 0.0,
+    "num_reward_ones": 0,
+    "num_reward_zeros": 256,
+    "eval_accuracy": 0.0,
+    "eval_format_ok_rate": 0.0
+  }
+]

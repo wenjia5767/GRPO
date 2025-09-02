@@ -1,0 +1,36 @@
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE and editor folders
+.vscode/
+.idea/
+
+# Data files - 非常重要！
+# 忽略所有在 data/ 文件夹里的内容
+data/
+# 忽略所有 .csv, .zip, .gz, .pkl 文件
+*.csv
+*.zip
+*.gz
+*.pkl
+
+# Model checkpoints - 非常重要！
+*.pt
+*.pth
+*.bin
+*.h5
+*.onnx
+*.safetensors
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
