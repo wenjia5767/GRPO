@@ -125,13 +125,13 @@ GRPO 解决了传统 RL 算法在语言模型上遇到的两个主要挑战：
 * **优势估计**: 优势值 $A^{(i)}$ 不再通过价值网络计算，而是通过对这组回答的奖励 $r^{(i)}$ 进行**Group Normalized Advantage**来得到。
 
 **公式**：
-
-$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage_eps}}$
+```math
+A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage\_eps}}
 
 * $A^{(i)}$：第 $i$ 个回答的优势值。
 * $r^{(i)}$：第 $i$ 个回答的奖励。
 * $\text{mean}(r^{(G)})$ 和 $\text{std}(r^{(G)})$：这组回答的奖励均值和标准差。
-* $\text{advantage_eps}$：一个很小的常数，用于防止除以零。
+* $\text{advantage\_eps}$：一个很小的常数，用于防止除以零。
 
 #### 2. PPO式裁剪目标 (PPO-style Clipping Objective)
 
@@ -141,7 +141,7 @@ GRPO 采用了与 PPO (Proximal Policy Optimization) 类似的裁剪机制，以
 
 **公式**：
 
-$\mathcal{L}(\theta) = \mathbb{E}_{q, \{o^{(i)}\} \sim \pi_{\theta_{\text{old}}}( \cdot | q)} \left[ \min \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)} A^{(i)}, \text{clip} \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)}, 1-\epsilon, 1+\epsilon \right) A^{(i)} \right) \right]$
+$$\mathcal{L}(\theta) = \mathbb{E}_{q, \{o^{(i)}\} \sim \pi_{\theta_{\text{old}}}( \cdot | q)} \left[ \min \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)} A^{(i)}, \text{clip} \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)}, 1-\epsilon, 1+\epsilon \right) A^{(i)} \right) \right]$$
 
 * $\pi_{\theta}(new)$：当前策略，即要优化的新策略。
 * $\pi_{\theta_{\text{old}}}(old)$：生成回答（rollouts）的旧策略。
@@ -172,9 +172,9 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **No Baseline (简单 REINFORCE)**:
-    $\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]$
+    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]$$
     **With Baseline (本项目中的实现)**:
-    $\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]$
+    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]$$
     其中 $R(o)$ 是奖励，$\pi_{\theta}(o|q)$ 是策略在该回答上的对数概率，$\text{mean}(R^{(G)})$ 是组奖励的均值。
 
 * **结果**:
@@ -188,9 +188,9 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * #### 公式
     假设序列总损失为 $\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中 $|o|$ 是回答的 token 数量。
     **masked_mean**:
-    $\mathcal{L}_{\text{masked_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t$
+    $$\mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t$$
     **masked_normalize**:
-    $\mathcal{L}_{\text{masked_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t$
+    $$\mathcal{L}_{\text{masked\_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t$$
     其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
 
 * **结果**:
@@ -203,9 +203,9 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **Mean-Only Normalization**:
-    $A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})$
+    $$A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})$$
     **Standard Deviation Normalization (GRPO 标准方法)**:
-    $A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}$
+    $$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}$$
 
 * **结果**:
     ![优势标准化对比图](./grpo_nostd_norm/eval_curve.png)
@@ -217,7 +217,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     离策略学习的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
-    $\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$   $\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$
+    $$\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$$   $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
 
 * **结果**:
     *在此处插入你的训练日志图，例如:*
@@ -230,9 +230,9 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **GRPO-No-Clip (无裁剪)**:
-    $\mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]$
+    $$\mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]$$
     **GRPO-Clip (有裁剪)**:
-    $\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$
+    $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
 
 * **结果**:
     ![裁剪机制对比图](./grpo_off_policy_noclip/eval_curve.png)
