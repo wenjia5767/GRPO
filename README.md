@@ -126,7 +126,7 @@ GRPO 解决了传统 RL 算法在语言模型上遇到的两个主要挑战：
 
 **公式**：
 
-$$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage\_eps}}$$
+$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage\_eps}}$
 
 * $A^{(i)}$：第 $i$ 个回答的优势值。
 * $r^{(i)}$：第 $i$ 个回答的奖励。
