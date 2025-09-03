@@ -187,16 +187,16 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * **方法**: 分别设置 `length_normalization_type` 为 `masked_mean` 和 `masked_normalize` 进行了两次 GRPO 训练。
 
 * #### 公式
-    假设序列总损失为 $\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中 $|o|$ 是回答的 token 数量。
-    **masked_mean**:
+假设序列总损失为$\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中$|o|$是回答的 token 数量。
+**masked_mean**:
 ```math
   \mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t
 ```
-    **masked_normalize**:
+**masked_normalize**:
 ```math
   \mathcal{L}_{\text{masked\_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t
 ```
-    其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
+其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
 
 * **结果**:
     ![长度归一化对比图](./grpo_length_norm/eval_curve.png)
