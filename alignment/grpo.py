@@ -54,8 +54,8 @@ if os.path.exists(train_log_path) and not CLEAR_OLD:
 eval_steps, eval_accs, eval_format_rates = [], [], []
 
 # Dataset paths
-test_path = "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"
-in_path = "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"
+test_path = "/home/zhangwj/GRPO/data/gsm8k/test.jsonl"
+in_path = "/home/zhangwj/GRPO/data/gsm8k/train.jsonl"
 
 # --- Hyperparameters ---
 n_grpo_steps: int = 100

@@ -1,32 +1,27 @@
-import csv
+import gc
+import math
 import os
-import re
 import json
 import random
 import argparse
-import pandas as pd
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use("Agg")
+import shutil
+import uuid
 from typing import List, Dict, Tuple
-from unittest.mock import patch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import torch
 from torch.optim import AdamW
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     PreTrainedModel,
-    PreTrainedTokenizer,
-    get_scheduler,
 )
-from datasets import load_dataset
 from tqdm import tqdm
-from vllm import LLM, SamplingParams # pyright: ignore[reportMissingImports]
-from vllm.model_executor import set_random_seed as vllm_set_random_seed # pyright: ignore[reportMissingImports]
-import datetime
-
+from vllm import LLM, SamplingParams
 from alignment.drgrpo_grader import r1_zero_reward_fn
 from alignment.gsm8k_baseline import (
-    make_r1_zero_prompt,
-    extract_gold_answer,
     normalize_r1_zero_format,
 )
 
@@ -82,12 +77,14 @@ def get_response_log_probs(
     labels: torch.Tensor,    
     return_token_entropy: bool = False,
 ) -> Dict[str, torch.Tensor]:
+    was_training = model.training
+    model.eval()
     """
     Return per-token conditional log-probabilities log p(x_t | x_<t) and,
     optionally, the per-token entropy of the model's next-token distribution.
     Shapes in/out all follow the spec: (batch, seq_len).
     """
-    model.eval()
+    
     with torch.no_grad():
         logits = model(input_ids).logits
         log_probs_all = torch.log_softmax(logits, dim=-1)
@@ -95,6 +92,8 @@ def get_response_log_probs(
         out: Dict[str, torch.Tensor] = {"log_probs": log_probs}
         if return_token_entropy:
             out["token_entropy"] = compute_entropy(logits)  # (batch, seq_len)
+    if was_training:
+        model.train()
     return out
 
 
@@ -118,14 +117,11 @@ def masked_normalize(
         torch.Tensor: the normalized sum, ignoring elements where mask == 0.
     """
     masked_tensor = tensor * mask
-
     if dim is None:
         summed = masked_tensor.sum()
     else:
         summed = masked_tensor.sum(dim=dim)
-
     normalized = summed / normalize_constant
-
     return normalized
 
 
@@ -143,381 +139,322 @@ def sft_microbatch_train_step(
         normalize_constant=normalize_constant,
         dim=None
     )
-
     batch_size = policy_log_probs.shape[0]
-
     loss = normalized_sum / (batch_size * gradient_accumulation_steps)
-
     loss.backward()
-
     metadata = {}
-
     return loss.detach(), metadata
 
 
-def log_generations(
-    model: PreTrainedModel,
-    tokenizer: PreTrainedTokenizer,
-    prompts: List[str],
-    ground_truths: List[str],
-    max_new_tokens: int = 60,
-    device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-):  
-    """
-    Generates responses from a model for given prompts and logs detailed information,
-    using the provided advanced math grader for reward calculation.
-    """
-    model.eval()
-    model.to(device)  # type: ignore
-    log_data = []
-
-    for prompt_text, ground_truth_text in zip(prompts, ground_truths):
-        inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
-        input_length = inputs.input_ids.shape[1]
-
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                pad_token_id=tokenizer.eos_token_id,
-                output_scores=True,
-                return_dict_in_generate=True
-            ) # pyright: ignore[reportCallIssue]
-
-        generated_ids = outputs.sequences[0, input_length:]
-        generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
-
-        # 4. Reward information using the new math grader
-        reward_info = r1_zero_reward_fn(generated_text, ground_truth_text)
-
-        # 5. Average token entropy of the response
-        response_logits = torch.stack(outputs.scores, dim=1).squeeze(0)
-        avg_entropy = compute_entropy(response_logits)
-
-        # 6. Response length information
-        response_length = len(generated_ids)
-
-        log_data.append({
-            "input_prompt": prompt_text,
-            "generated_response": generated_text,
-            "ground_truth": ground_truth_text,
-            "format_reward": reward_info["format_reward"],
-            "answer_reward": reward_info["answer_reward"],
-            "total_reward": reward_info["reward"],
-            "avg_token_entropy": avg_entropy,
-            "response_length": response_length,
-        })
-
-    log_df = pd.DataFrame(log_data)
-
-    # Calculate aggregate statistics
-    avg_response_length = log_df['response_length'].mean()
-    correct_mask = log_df['answer_reward'] == 1.0
-    avg_len_correct = log_df[correct_mask]['response_length'].mean()
-    avg_len_incorrect = log_df[~correct_mask]['response_length'].mean()
-
-    print("--- Generation Log Summary ---")
-    print(f"Average response length (all): {avg_response_length:.2f} tokens")
-    print(f"Average response length (correct): {avg_len_correct:.2f} tokens")
-    print(f"Average response length (incorrect): {avg_len_incorrect:.2f} tokens")
-    print(f"Overall Accuracy: {log_df['answer_reward'].mean():.2%}")
-    print("------------------------------")
-
-    return log_df
-
-
-def init_vllm(
-    model_id: str,
-    seed: int,
-    gpu_memory_utilization: float = 0.30,
-    vllm_cuda_visible_devices: str = "1",
-    tokenizer_id: str | None = None
+def rebuild_vllm_from_policy(
+    policy, tokenizer, gen_device_id, gpu_memory_utilization
 ):
-    prev_cvd = os.environ.get("CUDA_VISIBLE_DEVICES")
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(vllm_cuda_visible_devices)
-    world_size_patch = patch("torch.distributed.get_world_size", return_value=1)
-    profiling_patch = patch("vllm.worker.worker.Worker._assert_memory_footprint_increased_during_profiling", return_value=None)
-    try:
-        with world_size_patch, profiling_patch:
-            llm = LLM(
-                model=model_id,
-                tokenizer=(tokenizer_id or model_id),
-                dtype=torch.bfloat16, # type: ignore
-                enable_prefix_caching=True,
-                gpu_memory_utilization=gpu_memory_utilization,
-                seed=seed,
-                tensor_parallel_size=1,
-            )
-    finally:
-        if prev_cvd is None:
-            del os.environ["CUDA_VISIBLE_DEVICES"]
-        else:
-            os.environ["CUDA_VISIBLE_DEVICES"] = prev_cvd
-    return llm
-
-
-def load_policy_into_vllm_instance(
-    policy: PreTrainedModel,
-    llm: LLM | None,
-    vllm_cuda_visible_devices: str = "1",
-    tokenizer_id: str | None = None,
-    gpu_mem_util: float = 0.30,
-):
-    import tempfile
-    tmp_dir = tempfile.mkdtemp(prefix="_tmp_vllm_eval_ckpt_")
+    tmp_dir = f"/tmp/_tmp_vllm_eval_ckpt_{uuid.uuid4().hex}"
     policy.save_pretrained(tmp_dir)
+    tokenizer.save_pretrained(tmp_dir)
 
-    # hard-stop the previous engine to free GPU:1
-    try:
-        if llm is not None and hasattr(llm, "shutdown"):
-            llm.shutdown() # type: ignore
-    except Exception as e:
-        print(f"Warning: vLLM shutdown raised: {e}")
-
-    # re-create on GPU:1 with smaller memory request
-    new_llm = init_vllm(
-        model_id=tmp_dir,
-        seed=42,
-        vllm_cuda_visible_devices=vllm_cuda_visible_devices,
-        tokenizer_id=(tokenizer_id or policy.name_or_path),
-        gpu_memory_utilization=gpu_mem_util,
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gen_device_id)
+    new_vllm = LLM(
+        model=tmp_dir,
+        tensor_parallel_size=1,
+        gpu_memory_utilization=gpu_memory_utilization,
     )
-    return new_llm
+    return new_vllm, tmp_dir
 
 
-class SFTDataset(Dataset):
-    def __init__(self, data): self.data = data
-    def __len__(self): return len(self.data)
-    def __getitem__(self, idx): return self.data[idx]
+def chunked(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i : i + n]
 
 
-def load_data_from_jsonl(file_path: str) -> List[Dict]:
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return [json.loads(line) for line in f]
-
-
-def format_gsm8k_for_sft(dataset):
-    return [{"prompt": ex["question"], "response": ex["answer"]} for ex in dataset]
-
-
-def collate_fn(batch, tokenizer):
-    prompts = [item['prompt'] for item in batch]
-    responses = [item['response'] for item in batch]
-    return tokenize_prompt_and_output(prompts, responses, tokenizer)
-
-
-def evaluate(policy_model, vllm_instance, tokenizer, validation_data, eval_batch_size):
+@torch.no_grad()
+def evaluate_with_vllm(
+    vllm_gen,
+    test_path,
+    sampling_params_eval,
+    eval_batch_size: int = 64,
+) -> tuple[float, float]:
     """
-    Evaluate with vLLM on a separate GPU. If vLLM can't start due to low free VRAM
-    or any other error, fall back to HF generate on the policy_model's device.
+    Returns (answer_accuracy, format_accuracy) using vLLM.
+    - answer_accuracy := mean of 'reward' (1 only when formatted AND correct)
+    - format_accuracy := mean of 'format_reward' (1 when formatted; 0 otherwise)
     """
+    QAs_test = []
+    with open(test_path, "r", encoding="utf-8") as fin:
+        for line in fin:
+            ex = json.loads(line)
+            q_text = ex.get("question")
+            ans_raw = ex.get("answer")
+            parts = ans_raw.split("####")
+            reasoning_text = parts[0].strip()
+            a_text = parts[-1].strip()
+            QAs_test.append({"Q": q_text, "R": reasoning_text, "A": a_text})
+        
+    prompts_o, output_o = make_r1_zero_format(QAs_test)
 
-    # ---- local HF fallback (no vLLM) ----
-    def evaluate_hf(policy_model, tokenizer, validation_data, device=None, max_new_tokens=1024):
-        if device is None:
-            device = str(policy_model.device)
-        policy_model.eval()
-        acc = 0
-        with torch.no_grad():
-            for ex in validation_data:
-                prompt = make_r1_zero_prompt(ex['prompt'])
-                inputs = tokenizer(prompt, return_tensors="pt").to(device)
-                input_len = inputs.input_ids.shape[1]
-                out_ids = policy_model.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    do_sample=False,
-                    pad_token_id=tokenizer.eos_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
-                )[0][input_len:]
-                text = tokenizer.decode(out_ids, skip_special_tokens=True)
-                reward = r1_zero_reward_fn(
-                    normalize_r1_zero_format(text),
-                    extract_gold_answer(ex['response'])
-                )
-                acc += int(reward.get("answer_reward", 0.0) > 0.5)
-        return acc / len(validation_data) if validation_data else 0.0
+    if len(QAs_test) == 0:
+        return 0.0, 0.0
 
-    # ---- try vLLM path ----
-    VLLM_GPU = "1"          # pin eval to GPU:1
-    VLLM_MEM = 0.30         # request a smaller fraction to avoid startup failure
+    prompts = prompts_o
+    gts = [ex["A"] for ex in QAs_test]
 
-    was_training = policy_model.training
-    policy_model.eval()
+    sum_reward = 0.0
+    sum_format = 0.0
+    N = len(prompts)
 
+    for pc_chunk, gt_chunk in zip(
+        chunked(prompts, eval_batch_size), chunked(gts, eval_batch_size)
+    ):
+        outs = vllm_gen.generate(pc_chunk, sampling_params_eval)
+        for out, gt in zip(outs, gt_chunk):
+            text = out.outputs[0].text
+            norm_text = normalize_r1_zero_format(text)
+            res = r1_zero_reward_fn(norm_text, gt)
+            sum_reward += float(res.get("reward", 0.0))
+            sum_format += float(res.get("format_reward", 0.0))
+
+    acc = sum_reward / N
+    fmt = sum_format / N
+    return acc, fmt
+
+def make_r1_zero_format(QAs):
+    prompts = []
+    output = []
+    for QA in QAs:
+        prompts.append("A conversation between User and Assistant. The User asks a question, and the Assistant solves it. "
+        "The Assistant first thinks about the reasoning process in the mind and then provides the User with the answer. "
+        "The reasoning process is enclosed within <think> </think> and answer is enclosed within <answer> </answer> tags, "
+        "respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>.\n"
+        f"User: {QA["Q"]}\n"
+        "Assistant: <think>")
+        output.append(f"{QA["R"]}</think> <answer>{QA["A"]}</answer>.\n")
+    return prompts, output
+
+
+# --- Configuration & File Paths ---
+# Run dir & artifact paths
+RUN_NAME = os.environ.get("RUN_NAME", "sft_gsm8k")
+CLEAR_OLD = os.environ.get("CLEAR_OLD", "0") == "1"
+
+run_dir = os.path.abspath(f"./{RUN_NAME}")
+
+if os.path.exists(run_dir) and CLEAR_OLD:
+    shutil.rmtree(run_dir)
+
+os.makedirs(run_dir, exist_ok=True)
+
+train_log_path = os.path.join(run_dir, "train_log.json")
+eval_plot_path = os.path.join(run_dir, "eval_curve.png")
+policy_outdir = os.path.join(run_dir, "policy_final")
+
+# If NOT clearing, try to resume the JSON log
+train_log = []
+if os.path.exists(train_log_path) and not CLEAR_OLD:
     try:
-        # Always (re)create a fresh vLLM instance with current weights.
-        # This function should save policy weights to a temp dir, shutdown the old engine,
-        # and init a new engine on GPU:1 with tokenizer from the base model path.
-        llm = load_policy_into_vllm_instance(
-            policy=policy_model,
-            llm=vllm_instance,                      # can be None; function will handle it
-            vllm_cuda_visible_devices=VLLM_GPU,
-            tokenizer_id=tokenizer.name_or_path,    # tokenizer lives at your base model path
-            gpu_mem_util=VLLM_MEM,
-        )
+        with open(train_log_path, "r", encoding="utf-8") as f:
+            train_log = json.load(f)
+    except Exception:
+        train_log = []
 
-        # Build eval prompts/labels
-        prompts = [make_r1_zero_prompt(ex['prompt']) for ex in validation_data]
-        gts = [extract_gold_answer(ex['response']) for ex in validation_data]
-
-        params = SamplingParams(
-            temperature=1.0,
-            max_tokens=1024,
-            stop=["</answer>"],
-            include_stop_str_in_output=True,
-        )
-
-        try:
-            outputs = llm.generate(prompts, params)
-            correct = 0
-            for out, gold in zip(outputs, gts):
-                text = normalize_r1_zero_format(out.outputs[0].text)
-                reward = r1_zero_reward_fn(text, gold)
-                correct += int(reward.get("answer_reward", 0.0) > 0.5)
-            acc = correct / len(prompts) if prompts else 0.0
-        finally:
-            # IMPORTANT: free GPU:1 immediately after eval
-            try:
-                llm.shutdown() # type: ignore
-            except Exception as _e:
-                print(f"Warning: vLLM shutdown raised: {_e}")
-            llm = None
-
-        return acc
-
-    except Exception as e:
-        print(f"vLLM eval failed ({e}); falling back to HF generate on {policy_model.device}.")
-        return evaluate_hf(policy_model, tokenizer, validation_data, device=str(policy_model.device))
-
-    finally:
-        if was_training:
-            policy_model.train()
-
-
-def run_sft_experiment(args):
-    """Main function to run a single SFT experiment."""
-
-    # --- CHANGE 1: Setup for CSV Logging instead of wandb ---
-    run_name = f"sft_size_{args.num_examples}_lr_{args.lr}_bs_{args.batch_size}_{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    log_file_path = f"./{run_name}_logs.csv"
-    log_fieldnames = ['train_step', 'train_loss', 'eval_step', 'eval_accuracy']
-
-    # Write the header of the CSV file
-    with open(log_file_path, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=log_fieldnames)
-        writer.writeheader()
-
-    print(f"Logging results to {log_file_path}")
-
-    # 1. LOAD MODEL AND TOKENIZER
-    device = "cuda:0"
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id, local_files_only=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    policy_model = AutoModelForCausalLM.from_pretrained(
-        args.model_id, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2"
-    ).to(device) # pyright: ignore[reportArgumentType]
-
-    # 2. INITIALIZE VLLM FOR EVALUATION
-    # eval_device = "cuda:1" if torch.cuda.device_count() > 1 else "cuda:0"
-    # vllm_instance = init_vllm(args.model_id, seed=42,
-    #                       vllm_cuda_visible_devices="1",
-    #                       tokenizer_id=args.model_id)
-    vllm_instance = None
-
-    # 3. LOAD AND PREPARE DATA
-    train_data_raw = load_data_from_jsonl(args.train_file_path)
-    validation_data_raw = load_data_from_jsonl(args.test_file_path)
-    full_train_data = format_gsm8k_for_sft(train_data_raw)
-    validation_data = format_gsm8k_for_sft(validation_data_raw)
-
-    random.seed(42)
-    random.shuffle(full_train_data)
-    num_train_examples = len(full_train_data) if args.num_examples == -1 else args.num_examples
-    train_subset = full_train_data[:num_train_examples]
-
-    train_dataset = SFTDataset(train_subset)
-    train_dataloader = DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=True,
-        collate_fn=lambda b: collate_fn(b, tokenizer), num_workers=4
-    )
-
-    # 4. SETUP OPTIMIZER
-    optimizer = AdamW(policy_model.parameters(), lr=args.lr)
-
-    # 5. TRAINING LOOP
-    global_step = 0
-    best_accuracy = -1.0
-    for epoch in range(args.num_epochs):
-        policy_model.train()
-        for step, batch in enumerate(tqdm(train_dataloader, desc=f"Epoch {epoch+1}")):
-            batch = {k: v.to(device) for k, v in batch.items()}
-
-            logits = policy_model(input_ids=batch['input_ids']).logits
-
-            loss_fct = torch.nn.CrossEntropyLoss(reduction='none')
-            per_token_loss = loss_fct(logits.view(-1, logits.size(-1)), batch['labels'].view(-1))
-            per_token_loss = per_token_loss.view(logits.size(0), -1)
-            masked_loss = per_token_loss * batch['response_mask']
-            loss = masked_loss.sum() / batch['response_mask'].sum()
-
-            scaled_loss = loss / args.grad_accumulation_steps
-            scaled_loss.backward()
-
-            if (step + 1) % args.grad_accumulation_steps == 0:
-                global_step += 1
-                torch.nn.utils.clip_grad_norm_(policy_model.parameters(), 1.0)
-                optimizer.step()
-                optimizer.zero_grad()
-
-                # --- CHANGE 2: Log training loss to CSV ---
-                with open(log_file_path, 'a', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=log_fieldnames)
-                    writer.writerow({'train_step': global_step, 'train_loss': loss.item()})
-
-        # 6. EVALUATION at the end of each epoch
-        print(f"--- Finished Epoch {epoch+1}, starting evaluation... ---")
-        accuracy = evaluate(policy_model, vllm_instance, tokenizer, validation_data, args.eval_batch_size)
-        print(f"Validation Accuracy: {accuracy:.4f}")
-
-        # --- CHANGE 3: Log evaluation accuracy to CSV ---
-        with open(log_file_path, 'a', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=log_fieldnames)
-            writer.writerow({'eval_step': epoch + 1, 'eval_accuracy': accuracy})
-
-        if accuracy > best_accuracy:
-            best_accuracy = accuracy
-            output_dir = f"./sft_model_best_{run_name}"
-            print(f"New best accuracy! Saving model to {output_dir}")
-            policy_model.save_pretrained(output_dir)
-            tokenizer.save_pretrained(output_dir)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run SFT experiment on GSM8K with CSV logging.")
-    parser.add_argument("--model_id", type=str, required=True, help="Local path to the base model.")
-    parser.add_argument("--train_file_path", type=str, required=True, help="Path to your train.jsonl file.")
-    parser.add_argument("--test_file_path", type=str, required=True, help="Path to your test.jsonl file.")
-    parser.add_argument("--lr", type=float, default=2e-5)
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--eval_batch_size", type=int, default=8)
-    parser.add_argument("--grad_accumulation_steps", type=int, default=16)
-    parser.add_argument("--num_epochs", type=int, default=1)
-    parser.add_argument("--num_examples", type=int, default=128)
-
+    parser = argparse.ArgumentParser(description="Run SFT experiments with hyperparameter tuning.")
+    # --- 参数定义 (保持不变) ---
+    parser.add_argument("--model_path", type=str, default="/data/Qwen2.5-Math-1.5B", help="Local path to the base model.")
+    parser.add_argument("--train_path", type=str, default="/home/zhangwj/GRPO/data/gsm8k/train.jsonl", help="Path to train.jsonl.")
+    parser.add_argument("--test_path", type=str, default="/home/zhangwj/GRPO/data/gsm8k/test.jsonl", help="Path to test.jsonl.")
+    parser.add_argument("--learning_rate", type=float, default=5e-6, help="Learning rate for AdamW optimizer.")
+    parser.add_argument("--batch_size", type=int, default=2, help="Micro-batch size for training.")
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=32, help="Gradient accumulation steps.")
+    parser.add_argument("--num_epochs", type=int, default=5, help="Number of training epochs for each run.")
+    parser.add_argument("--eval_batch_size", type=int, default=32, help="Batch size for evaluation.")
+    parser.add_argument("--train_device_id", type=int, default=0, help="GPU device ID for training.")
+    parser.add_argument("--gen_device_id", type=int, default=1, help="GPU device ID for vLLM evaluation.")
+    
     args = parser.parse_args()
 
+    # --- 实验设置 ---
     dataset_sizes = [128, 256, 512, 1024, -1]
+    all_results = {} 
+
+    # --- 数据加载 (只加载一次) ---
+    print("Pre-loading and formatting datasets...")
+    QAs_train_full = []
+    with open(args.train_path, "r", encoding="utf-8") as fin:
+        for line in fin:
+            ex = json.loads(line)
+            q_text, ans_raw = ex.get("question"), ex.get("answer")
+            parts = ans_raw.split("####")
+            QAs_train_full.append({"Q": q_text, "R": parts[0].strip(), "A": parts[-1].strip()})
+    
+    prompts_o_full, output_o_full = make_r1_zero_format(QAs_train_full)
+    prompt_output_pairs_full = [{"P": a, "O": b} for a, b in zip(prompts_o_full, output_o_full)]
+
+    # --- 自动化实验循环 ---
     for size in dataset_sizes:
-        print(f"\n{'='*20} RUNNING SFT FOR {size if size != -1 else 'ALL'} EXAMPLES {'='*20}\n")
-        args.num_examples = size
-        args.num_epochs = 3 if size in [128, 256] else 1
-        run_sft_experiment(args)
+        run_name = f"sft_size-{size if size != -1 else 'full'}_lr-{args.learning_rate}_bs-{args.batch_size}"
+        print(f"\n{'='*25}\n🚀 Starting Experiment: {run_name}\n{'='*25}")
 
-    print(f"\n{'='*20} RUNNING SFT FOR FILTERED (FULL) DATASET {'='*20}\n")
-    args.num_examples = -1
-    args.num_epochs = 1
-    run_sft_experiment(args)
+        torch.cuda.set_device(args.train_device_id)
+        device = torch.device(f"cuda:{args.train_device_id}")
+        
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_path, torch_dtype=torch.bfloat16, attn_implementation="sdpa", local_files_only=True
+        ).to(device) # type: ignore
+        tokenizer = AutoTokenizer.from_pretrained(args.model_path, local_files_only=True)
+        if tokenizer.pad_token is None: tokenizer.pad_token = tokenizer.eos_token
 
-   # CUDA_VISIBLE_DEVICES=0,1 python -m cs336_alignment.sft     --model_id "/data/Qwen2.5-Math-1.5B"     --train_file_path "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"     --test_file_path "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"
+        optimizer = AdamW(model.parameters(), lr=args.learning_rate)
+
+        # --- 为当前实验准备数据 ---
+        num_examples = len(prompt_output_pairs_full) if size == -1 else size
+        random.shuffle(prompt_output_pairs_full)
+        train_subset = prompt_output_pairs_full[:num_examples]
+
+        train_dataset = [{"prompt": ex["P"], "output": ex["O"]} for ex in train_subset]
+        train_dataloader = DataLoader(
+            train_dataset, # type: ignore
+            batch_size=args.batch_size,
+            shuffle=True,
+            collate_fn=lambda b: tokenize_prompt_and_output([item['prompt'] for item in b], [item['output'] for item in b], tokenizer)
+        )
+        
+        # --- 动态计算评估间隔 ---
+        # 目标是在每个 epoch 中评估大约5次
+        num_evals_per_epoch = 5
+        total_batches_per_epoch = len(train_dataloader)
+        total_global_steps_per_epoch = total_batches_per_epoch // args.gradient_accumulation_steps
+        dynamic_eval_steps = max(1, total_global_steps_per_epoch // num_evals_per_epoch)
+        print(f"Dynamic evaluation every {dynamic_eval_steps} global steps.")
+
+        # --- 训练循环 ---
+        global_step = 0
+        best_accuracy = -1.0
+        run_eval_steps = []
+        run_eval_accs = []
+        vllm_gen, _tmp_dir = None, None
+        
+        try:
+            # --- 在训练前进行一次评估 (第0步) ---
+            print(f"\n🔄 Running initial evaluation at step 0 (before training)...")
+            vllm_gen, _tmp_dir = rebuild_vllm_from_policy(model, tokenizer, args.gen_device_id, 0.85)
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(args.train_device_id)
+            sampling_params_eval = SamplingParams(n=1, temperature=0.0, max_tokens=2048)
+            acc, fmt = evaluate_with_vllm(vllm_gen, args.test_path, sampling_params_eval, args.eval_batch_size)
+            print(f"[EVAL] Step=0 | Accuracy={acc:.4f} | Format OK={fmt:.4f}")
+            run_eval_steps.append(0)
+            run_eval_accs.append(acc)
+
+            for epoch in range(args.num_epochs):
+                print(f"--- Epoch {epoch+1}/{args.num_epochs} ---")
+                model.train()
+                optimizer.zero_grad()
+                
+                for step, batch in enumerate(tqdm(train_dataloader, desc=f"Epoch {epoch+1}")):
+                    batch = {k: v.to(device) for k, v in batch.items()}
+                    
+                    logits = model(input_ids=batch['input_ids']).logits
+                    log_probs_all = torch.log_softmax(logits, dim=-1)
+                    policy_log_probs = torch.gather(log_probs_all, dim=-1, index=batch['labels'].unsqueeze(-1)).squeeze(-1)
+                    
+                    loss, _ = sft_microbatch_train_step(
+                        policy_log_probs,
+                        batch["response_mask"],
+                        args.gradient_accumulation_steps,
+                        normalize_constant=batch["response_mask"].sum()
+                    )
+
+                    if (step + 1) % args.gradient_accumulation_steps == 0:
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                        optimizer.step()
+                        optimizer.zero_grad()
+                        global_step += 1
+
+                        if global_step > 0 and global_step % dynamic_eval_steps == 0:
+                            print(f"\n🔄 Running evaluation at global step {global_step}...")
+                            if vllm_gen is not None: del vllm_gen
+                            if _tmp_dir and os.path.exists(_tmp_dir): shutil.rmtree(_tmp_dir, ignore_errors=True)
+                            gc.collect()
+                            torch.cuda.empty_cache()
+
+                            vllm_gen, _tmp_dir = rebuild_vllm_from_policy(model, tokenizer, args.gen_device_id, 0.85)
+                            os.environ["CUDA_VISIBLE_DEVICES"] = str(args.train_device_id)
+
+                            acc, fmt = evaluate_with_vllm(vllm_gen, args.test_path, sampling_params_eval, args.eval_batch_size)
+                            print(f"[EVAL] Step={global_step} | Accuracy={acc:.4f} | Format OK={fmt:.4f}")
+                            run_eval_steps.append(global_step)
+                            run_eval_accs.append(acc)
+                            
+                            if acc > best_accuracy:
+                                best_accuracy = acc
+                                print(f"🎉 New best accuracy for this run: {best_accuracy:.4f}")
+
+            # --- 在每个 epoch 结束后强制进行一次评估 ---
+            print(f"\n🔄 Running final evaluation for Epoch {epoch+1} at global step {global_step}...") # type: ignore
+            if vllm_gen is not None: del vllm_gen
+            if _tmp_dir and os.path.exists(_tmp_dir): shutil.rmtree(_tmp_dir, ignore_errors=True)
+            gc.collect()
+            torch.cuda.empty_cache()
+
+            vllm_gen, _tmp_dir = rebuild_vllm_from_policy(model, tokenizer, args.gen_device_id, 0.85)
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(args.train_device_id)
+
+            acc, fmt = evaluate_with_vllm(vllm_gen, args.test_path, sampling_params_eval, args.eval_batch_size)
+            print(f"[EVAL] Step={global_step} | Accuracy={acc:.4f} | Format OK={fmt:.4f}")
+            
+            # 避免重复添加最后一个点
+            if not run_eval_steps or run_eval_steps[-1] != global_step:
+                run_eval_steps.append(global_step)
+                run_eval_accs.append(acc)
+
+            if acc > best_accuracy:
+                best_accuracy = acc
+                print(f"🎉 New best accuracy for this run: {best_accuracy:.4f}")
+
+        finally:
+            # 清理资源
+            if vllm_gen is not None: del vllm_gen # type: ignore
+            if _tmp_dir and os.path.exists(_tmp_dir): shutil.rmtree(_tmp_dir, ignore_errors=True)
+            gc.collect()
+            torch.cuda.empty_cache()
+
+        all_results[f"n={num_examples}"] = {"steps": run_eval_steps, "accuracy": run_eval_accs}
+
+    # --- 最终绘图 (这部分代码保持不变) ---
+    print(f"\n\n{'='*25}\n📈 All experiments finished. Generating plots...\n{'='*25}")
+    # ... (省略与上一版相同的绘图代码)
+    # 1. 为每一次实验生成单独的图表
+    print("\nGenerating individual plots for each run...")
+    for run_label, data in all_results.items():
+        if not data["steps"] or not data["accuracy"]:
+            print(f"Skipping plot for {run_label} due to no evaluation data.")
+            continue
+        plt.figure(figsize=(10, 6))
+        plt.plot(data["steps"], data["accuracy"], marker='o', linestyle='-', label=run_label)
+        plt.title(f"Validation Accuracy vs. Training Steps for {run_label}")
+        plt.xlabel("Global Training Steps")
+        plt.ylabel("Validation Accuracy")
+        plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+        plt.legend()
+        plt.ylim(0, max(data['accuracy']) * 1.2 if data['accuracy'] else 0.2)
+        individual_plot_path = f"./sft_experiment_{run_label.replace('=', '_')}.png"
+        plt.savefig(individual_plot_path)
+        plt.close()
+        print(f"✅ Individual plot saved to: {individual_plot_path}")
+    # 2. 生成包含所有曲线的对比图表
+    print("\nGenerating comparison plot...")
+    plt.figure(figsize=(10, 6))
+    for run_label, data in all_results.items():
+        if data["steps"] and data["accuracy"]:
+            plt.plot(data["steps"], data["accuracy"], marker='o', linestyle='-', label=run_label)
+    plt.title("Validation Accuracy vs. Training Steps for Different Dataset Sizes")
+    plt.xlabel("Global Training Steps")
+    plt.ylabel("Validation Accuracy")
+    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+    plt.legend()
+    plt.ylim(0, max(max(d['accuracy']) for d in all_results.values() if d['accuracy']) * 1.2 if any(d['accuracy'] for d in all_results.values()) else 0.2)
+    comparison_plot_path = "./sft_experiments_comparison.png"
+    plt.savefig(comparison_plot_path)
+    plt.close()
+    print(f"\n✅ Comparison plot saved to: {comparison_plot_path}")
