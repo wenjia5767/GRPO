@@ -16,8 +16,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from datasets import load_dataset
 
 # -------- Make sure these helper modules are in your path --------
-from cs336_alignment.drgrpo_grader import r1_zero_reward_fn
-from cs336_alignment.gsm8k import (
+from alignment.drgrpo_grader import r1_zero_reward_fn
+from alignment.gsm8k import (
     make_r1_zero_prompt,
     extract_gold_answer,
     normalize_r1_zero_format,
@@ -128,7 +128,7 @@ def load_model_and_tokenizer():
         MODEL_ID,
         torch_dtype=torch.bfloat16,
         attn_implementation="eager", # Use Flash Attention 2 for speed: flash_attention_2
-    ).to(device)
+    ).to(device) # type: ignore
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token

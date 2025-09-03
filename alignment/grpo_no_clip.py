@@ -13,14 +13,14 @@ from torch.optim import AdamW
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams 
 
-from cs336_alignment.drgrpo_grader import r1_zero_reward_fn
-from cs336_alignment.gsm8k import normalize_r1_zero_format
+from alignment.drgrpo_grader import r1_zero_reward_fn
+from alignment.gsm8k import normalize_r1_zero_format
 
 matplotlib.use("Agg")
 
 # --- Configuration & File Paths ---
 # Run dir & artifact paths
-RUN_NAME = os.environ.get("RUN_NAME", "grpo_off_policy")
+RUN_NAME = os.environ.get("RUN_NAME", "grpo_off_policy_noclip")
 CLEAR_OLD = os.environ.get("CLEAR_OLD", "0") == "1"
 
 run_dir = os.path.abspath(f"./{RUN_NAME}")
@@ -67,12 +67,13 @@ loss_type: Literal[
     "no_baseline",
     "reinforce_with_baseline",
     "grpo_clip",
-] = "grpo_clip"
+    "grpo_no_clip",
+] = "grpo_no_clip"
 use_std_normalization: bool = True
 refresh_vllm_every: int = 1
 eval_every: int = 1
 cliprange: float = 0.2
-model_path = "/home/zhangwj/Qwen2.5-Math-1.5B"
+model_path = "/data/Qwen2.5-Math-1.5B"
 
 length_normalization_type: Literal["masked_mean", "masked_normalize"] = "masked_normalize"
 
@@ -89,6 +90,23 @@ assert train_batch_size >= group_size, (
     "train_batch_size must be greater than or equal to group_size"
 )
 n_microbatches_per_rollout_batch = rollout_batch_size // micro_train_batch_size
+
+def compute_grpo_no_clip_loss(
+    advantages: torch.Tensor,
+    policy_log_probs: torch.Tensor,
+    old_log_probs: torch.Tensor,
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
+    """Computes the unclipped GRPO loss."""
+    # This is the ratio: pi_theta / pi_theta_old
+    ratio = torch.exp(policy_log_probs - old_log_probs)
+
+    # This is the unclipped objective from the problem description
+    loss = -ratio * advantages
+
+    metadata = {
+        "ratio": ratio.mean(),
+    }
+    return loss, metadata
 
 
 # --- Helper Functions ---
@@ -174,6 +192,10 @@ def compute_policy_gradient_loss(
     elif loss_type == "grpo_clip":
         loss, metadata = compute_grpo_clip_loss(
             advantages, policy_log_probs, old_log_probs, cliprange # type: ignore
+        )  # pyright: ignore[reportArgumentType]
+    elif loss_type == "grpo_no_clip":  # <-- ADD THIS BLOCK
+        loss, metadata = compute_grpo_no_clip_loss(
+            advantages, policy_log_probs, old_log_probs # type: ignore
         )  # pyright: ignore[reportArgumentType]
 
     return loss, metadata  # pyright: ignore[reportReturnType]

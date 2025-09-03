@@ -20,8 +20,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams  # pyright: ignore[reportMissingImports]
 
 # Ensure these helper modules are in your Python path
-from cs336_alignment.drgrpo_grader import r1_zero_reward_fn
-from cs336_alignment.gsm8k import normalize_r1_zero_format
+from alignment.drgrpo_grader import r1_zero_reward_fn
+from alignment.gsm8k import normalize_r1_zero_format
 
 matplotlib.use("Agg")
 

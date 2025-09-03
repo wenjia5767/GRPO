@@ -14,8 +14,8 @@ from vllm import LLM, SamplingParams # pyright: ignore[reportMissingImports]
 import matplotlib.pyplot as plt
 
 # 确保这些辅助模块在你的Python路径中
-from cs336_alignment.drgrpo_grader import r1_zero_reward_fn
-from cs336_alignment.gsm8k import (
+from alignment.drgrpo_grader import r1_zero_reward_fn
+from alignment.gsm8k import (
     make_r1_zero_prompt,
     extract_gold_answer,
     normalize_r1_zero_format,
