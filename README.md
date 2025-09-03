@@ -126,12 +126,12 @@ GRPO 解决了传统 RL 算法在语言模型上遇到的两个主要挑战：
 
 **公式**：
 
-$$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage\_eps}}$$
+$$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{eps}}$$
 
 * $A^{(i)}$：第 $i$ 个回答的优势值。
 * $r^{(i)}$：第 $i$ 个回答的奖励。
 * $\text{mean}(r^{(G)})$ 和 $\text{std}(r^{(G)})$：这组回答的奖励均值和标准差。
-* $\text{advantage\_eps}$：一个很小的常数，用于防止除以零。
+* $\text{eps}$：一个很小的常数，用于防止除以零。
 
 #### 2. PPO式裁剪目标 (PPO-style Clipping Objective)
 
