@@ -114,8 +114,8 @@ if __name__ == "__main__":
     split = "test"
     ds = load_gsm8k(split=split, prefer_local_root="/home/zhangwj/gsm8k", config="main")
 
-    questions = [ex["question"] for ex in ds]
-    golds = [extract_gold_answer(ex["answer"]) for ex in ds]
+    questions = [ex["question"] for ex in ds] # type: ignore
+    golds = [extract_gold_answer(ex["answer"]) for ex in ds] # type: ignore
     prompts = [make_r1_zero_prompt(q) for q in questions]
 
     # 2) vLLM model + generation settings
