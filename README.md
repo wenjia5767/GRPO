@@ -4,30 +4,28 @@
 
 ## 简介 (Introduction)
 
-本项目实现了包括SFT、GRPO和DPO在内的多种主流对齐算法，并提供了可复现的代码、训练脚本和评估流程。
+本项目实现了包括SFT、GRPO和DPO在内的多种主流对齐算法，并提供了代码、训练脚本和评估流程。
 
-## 主要特性 (Features)
+### 主要内容
 
 * **SFT**：高效的监督微调实现。
 * **GRPO**：对Group Relative Policy Optimization算法的完整实现。
 * **DPO**：对Direct Preference Optimization算法的完整实现。
-* **统一接口**：所有对齐方法都遵循相似的训练和推理流程，易于使用。
 * **评估脚本**：提供脚本用于评估模型性能。
 
-## 开始使用 (Getting Started)
 
 ### 环境要求 (Prerequisites)
 
-* Python 3.x
-* PyTorch [版本号]
-* CUDA [版本号] (如果需要GPU支持)
+* Python 3.12
+* PyTorch 2.7.1
+* CUDA 12.9
 
 ### 安装 (Installation)
 
 1.  克隆项目仓库：
     ```bash
-    git clone [https://github.com/](https://github.com/)[你的GitHub用户名]/[你的项目名称].git
-    cd [你的项目名称]
+    git clone https://github.com/wenjia5767/GRPO.git
+    cd GRPO
     ```
 
 2.  安装依赖库：
@@ -35,7 +33,53 @@
     pip install -r requirements.txt
     ```
 
-    * **待完善**: 请在这里列出`requirements.txt`中的主要库，例如`transformers`, `datasets`, `accelerate`等。
+-----
+
+### 1. Qwen-2.5-Math-1.5B模型在GSM8K数据集上的Zero-Shot评测
+
+##### 本项目旨在评测 `Qwen-2.5-Math-1.5B` 模型在 **GSM8K** 数据集上的零样本数学推理能力。
+-----
+
+### 🎯 方法
+
+  * **模型**: `Qwen-2.5-Math-1.5B`
+  * **数据集**: GSM8K (`main` 配置, `test` 切分, 共 1319 个样本)
+  * **任务**: 零样本数学推理 (Zero-shot Mathematical Reasoning)
+  * **提示工程 (Prompting)**: 数据集中的每个问题都通过 **`r1_zero` 提示模板**进行格式化。该模板要求模型在 `<think>` 标签内生成其推理过程，并在 `<answer>` 标签内生成最终的数值答案。
+  * **推理**: 使用 `vllm` 库进行高效的模型推理生成。
+  * **评估**: 使用 `r1_zero_reward_fn` 函数来解析模型生成的文本，并将提取出的答案与标准答案进行比较打分。
+
+-----
+
+### 🚀 运行
+
+1.  **环境配置**: 确保已安装所需的 Python 库，主要包括 `vllm`, `datasets`, 和 `transformers`。
+2.  **路径配置**: 在运行脚本前，请根据实际情况，修改模型和本地数据集缓存的硬编码路径。
+3.  **执行脚本**: 在终端中运行脚本：
+    ```bash
+    python gsm8k_baseline.py
+    ```
+
+结果在以下文件中呈现：`gsm8k_eval_results.jsonl` (包含每个样本的详细结果) 和 `gsm8k_eval_summary.json` (包含整体的性能指标)。
+
+-----
+
+### 📊 评测结果
+
+在 GSM8K 测试集的 1319 个样本上，模型的基线性能 (baseline performance) 评测结果如下：
+
+```json
+{
+  "num_examples": 1319,
+  "format_rate": 0.025018953752843062,
+  "accuracy": 0.0037907505686125853,
+  "avg_reward": 0.0037907505686125853,
+  "results_path": "gsm8k_eval_results.jsonl"
+}
+```
+
+  * 模型遵循 `<think>`/`<answer>` 格式的能力较差，导致**格式正确率 (format rate) 极低，仅约 2.5%**。
+  * 最终答案的**准确率 (accuracy) 也非常低，仅约 0.38%**，表明该模型在 GSM8K 数据集的零样本设置下面临巨大挑战。
 
 ## 使用指南 (Usage)
 

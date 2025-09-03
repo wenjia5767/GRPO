@@ -17,7 +17,7 @@ from datasets import load_dataset
 
 # -------- Make sure these helper modules are in your path --------
 from alignment.drgrpo_grader import r1_zero_reward_fn
-from alignment.gsm8k import (
+from alignment.gsm8k_baseline import (
     make_r1_zero_prompt,
     extract_gold_answer,
     normalize_r1_zero_format,

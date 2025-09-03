@@ -1,16 +1,10 @@
-# gsm8k_vllm_eval_r1zero.py
-import os
 import re
 import json
 from pathlib import Path
-from typing import List, Dict, Optional
-
+from typing import List, Dict
 from datasets import load_dataset, Dataset
 from vllm import LLM, SamplingParams
-
-# Your grader
 from alignment.drgrpo_grader import r1_zero_reward_fn
-
 
 # ---------------------------
 # Load GSM8K (local parquet if available, else HF Hub)
@@ -24,9 +18,8 @@ def load_gsm8k(
     local_parquet = root / config / f"{split}-00000-of-00001.parquet"
     if local_parquet.exists():
         ds = load_dataset("parquet", data_files={split: str(local_parquet)})[split]
-        return ds
-    # fallback: HF hub
-    return load_dataset("openai/gsm8k", config, split=split)
+        return ds # type: ignore
+    return load_dataset("openai/gsm8k", config, split=split) # type: ignore
 
 
 # ---------------------------
@@ -56,7 +49,7 @@ def extract_gold_answer(answer_field: str) -> str:
 
 
 # ---------------------------
-# Optional: tiny normalization so the format check passes
+# tiny normalization so the format check passes
 # (reward_fn requires the exact substring '</think> <answer>')
 # ---------------------------
 def normalize_r1_zero_format(generated: str) -> str:
@@ -86,19 +79,12 @@ def evaluate_vllm_gsm8k(
 
     with open(save_jsonl, "w", encoding="utf-8") as f:
         for i, (prompt, out, gold) in enumerate(zip(prompts, outputs, gold_answers)):
-            # vLLM returns only the generated continuation after "Assistant:"
             gen_text = out.outputs[0].text
-
-            # Normalize so the strict format check doesn't fail on newlines
             response = normalize_r1_zero_format(gen_text)
-
-            # Grade with your provided function
             metrics = r1_zero_reward_fn(response=response, ground_truth=gold, fast=True)
-
             fmt_ok += int(metrics.get("format_reward", 0.0) > 0.5)
             correct += int(metrics.get("answer_reward", 0.0) > 0.5)
             rewards_sum += float(metrics.get("reward", 0.0))
-
             row = {
                 "id": i,
                 "prompt": prompt,
@@ -120,7 +106,6 @@ def evaluate_vllm_gsm8k(
         json.dump(summary, f, indent=2)
     return summary
 
-
 # ===========================
 # Main
 # ===========================
@@ -129,27 +114,20 @@ if __name__ == "__main__":
     split = "test"
     ds = load_gsm8k(split=split, prefer_local_root="/home/zhangwj/gsm8k", config="main")
 
-    # Build prompts + gold answers
     questions = [ex["question"] for ex in ds]
     golds = [extract_gold_answer(ex["answer"]) for ex in ds]
     prompts = [make_r1_zero_prompt(q) for q in questions]
-
-    # (Optional) small smoke test first
-    # N = 50
-    # prompts, golds = prompts[:N], golds[:N]
 
     # 2) vLLM model + generation settings
     sampling_params = SamplingParams(
         temperature=1.0,
         top_p=1.0,
         max_tokens=1024,
-        stop=["</answer>"],                 # stop when the answer block ends
-        include_stop_str_in_output=True,    # keep </answer> in the text
+        stop=["</answer>"],                
+        include_stop_str_in_output=True,   
     )
 
-    # If you have 2 GPUs and want tensor-parallel:
-    # with LLM(model="./Qwen2.5-Math-1.5B", tensor_parallel_size=2) as llm:
-    llm = LLM(model="/home/zhangwj/Qwen2.5-Math-1.5B")   # or "Qwen/Qwen2.5-Math-1.5B"
+    llm = LLM(model="/data/Qwen2.5-Math-1.5B")  
 
     summary = evaluate_vllm_gsm8k(
         llm,
@@ -159,7 +137,6 @@ if __name__ == "__main__":
         save_jsonl="gsm8k_eval_results.jsonl",
         summary_json="gsm8k_eval_summary.json",
     )
-
 
     print("Summary:", summary)
     print("Saved per-example to gsm8k_eval_results.jsonl and summary to gsm8k_eval_summary.json")

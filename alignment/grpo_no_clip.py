@@ -14,7 +14,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams 
 
 from alignment.drgrpo_grader import r1_zero_reward_fn
-from alignment.gsm8k import normalize_r1_zero_format
+from alignment.gsm8k_baseline import normalize_r1_zero_format
 
 matplotlib.use("Agg")
 

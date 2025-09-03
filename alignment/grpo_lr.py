@@ -21,7 +21,7 @@ from vllm import LLM, SamplingParams  # pyright: ignore[reportMissingImports]
 
 # Ensure these helper modules are in your Python path
 from alignment.drgrpo_grader import r1_zero_reward_fn
-from alignment.gsm8k import normalize_r1_zero_format
+from alignment.gsm8k_baseline import normalize_r1_zero_format
 
 matplotlib.use("Agg")
 
