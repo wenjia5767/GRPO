@@ -1,7 +1,7 @@
 import os
 import json
 import random
-import gc  # add this import at top with the others
+import gc
 import argparse
 from typing import List, Dict, Tuple
 from unittest.mock import patch
@@ -15,8 +15,6 @@ from transformers import (
     PreTrainedModel,
 )
 from vllm import LLM, SamplingParams
-
-# 确保这些辅助模块在你的Python路径中
 from alignment.drgrpo_grader import r1_zero_reward_fn
 from alignment.gsm8k_baseline import (
     make_r1_zero_prompt,
@@ -25,7 +23,7 @@ from alignment.gsm8k_baseline import (
 )
 
 # ============================================================
-#               Tokenization & Data Handling (已更新)
+#               Tokenization & Data Handling
 # ============================================================
 
 def safe_shutdown_vllm(llm):
@@ -43,7 +41,6 @@ def safe_shutdown_vllm(llm):
         print(f"Warning: could not cleanly shutdown vLLM: {e}")
     finally:
         try:
-            # Best-effort GPU memory cleanup
             del llm
             gc.collect()
             torch.cuda.empty_cache()
@@ -327,4 +324,4 @@ if __name__ == "__main__":
 
 
 
-# CUDA_VISIBLE_DEVICES=0,1 python -m cs336_alignment.sft_new     --model_id "/home/zhangwj/Qwen2.5-Math-1.5B"     --train_file_path "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"     --test_file_path "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"
+# CUDA_VISIBLE_DEVICES=0,1 python -m cs336_alignment.sft_new     --model_id "/data/Qwen2.5-Math-1.5B"     --train_file_path "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"     --test_file_path "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"

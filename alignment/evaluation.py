@@ -115,7 +115,7 @@ def evaluate_with_vllm(model_path, data_df):
 
 def main():
     data_dir = "/home/zhangwj/assignment5/data/mmlu"
-    model_path = "/home/zhangwj/Llama-3.1-8B"
+    model_path = "/data/Llama-3.1-8B"
     output_dir = "/home/zhangwj/assignment5/evaluation"
     os.makedirs(output_dir, exist_ok=True)
     

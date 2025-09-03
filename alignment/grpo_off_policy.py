@@ -72,7 +72,7 @@ use_std_normalization: bool = True
 refresh_vllm_every: int = 1
 eval_every: int = 1
 cliprange: float = 0.2
-model_path = "/home/zhangwj/Qwen2.5-Math-1.5B"
+model_path = "/data/Qwen2.5-Math-1.5B"
 
 length_normalization_type: Literal["masked_mean", "masked_normalize"] = "masked_normalize"
 

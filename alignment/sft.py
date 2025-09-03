@@ -7,7 +7,6 @@ import argparse
 import pandas as pd
 from typing import List, Dict, Tuple
 from unittest.mock import patch
-import wandb
 from torch.utils.data import DataLoader, Dataset
 import torch
 from torch.optim import AdamW
@@ -44,29 +43,24 @@ def tokenize_prompt_and_output(
       - labels:    (B, max_len-1) = shifted input_ids
       - response_mask: (B, max_len-1) mask over RESPONSE tokens in labels (1=response, 0=prompt/pad)
     """
-    # 1) Tokenize without special tokens
     prompt_tokens_list = tokenizer(prompt_strs, add_special_tokens=False).input_ids
     output_tokens_list = tokenizer(output_strs, add_special_tokens=False).input_ids
 
-    # 2) Concatenate per example
     combined_ids_list = [p + o for p, o in zip(prompt_tokens_list, output_tokens_list)]
 
-    # 3) Pad to max length
     max_len = max(len(ids) for ids in combined_ids_list)
     pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     padded_combined_ids = [ids + [pad_token_id] * (max_len - len(ids)) for ids in combined_ids_list]
     combined_ids = torch.tensor(padded_combined_ids, dtype=torch.long)
 
-    # 4) Build response mask over the FULL sequence (1 on output tokens)
     response_mask_full = torch.zeros_like(combined_ids, dtype=torch.long)
     for i, (p_ids, o_ids) in enumerate(zip(prompt_tokens_list, output_tokens_list)):
         p_len, o_len = len(p_ids), len(o_ids)
         response_mask_full[i, p_len:p_len + o_len] = 1
 
-    # 5) Slice to produce input_ids, labels, and mask aligned with LABELS
     input_ids = combined_ids[:, :-1]
     labels = combined_ids[:, 1:]
-    response_mask = response_mask_full[:, 1:]   # <-- align mask with labels
+    response_mask = response_mask_full[:, 1:] 
 
     return {
         "input_ids": input_ids,
@@ -84,8 +78,8 @@ def compute_entropy(logits: torch.Tensor) -> torch.Tensor:
 
 def get_response_log_probs(
     model: PreTrainedModel,
-    input_ids: torch.Tensor,   # (batch, seq_len)
-    labels: torch.Tensor,      # (batch, seq_len)
+    input_ids: torch.Tensor, 
+    labels: torch.Tensor,    
     return_token_entropy: bool = False,
 ) -> Dict[str, torch.Tensor]:
     """
@@ -95,21 +89,12 @@ def get_response_log_probs(
     """
     model.eval()
     with torch.no_grad():
-        # (batch, seq_len, vocab)
         logits = model(input_ids).logits
-
-        # log softmax over vocab to get log-probabilities
         log_probs_all = torch.log_softmax(logits, dim=-1)
-
-        # pick the log-prob assigned to the true next token at each position
-        # gather expects the index tensor to have an extra last dim
         log_probs = torch.gather(log_probs_all, dim=-1, index=labels.unsqueeze(-1)).squeeze(-1)
-
         out: Dict[str, torch.Tensor] = {"log_probs": log_probs}
-
         if return_token_entropy:
             out["token_entropy"] = compute_entropy(logits)  # (batch, seq_len)
-
     return out
 
 
@@ -132,32 +117,26 @@ def masked_normalize(
     Returns:
         torch.Tensor: the normalized sum, ignoring elements where mask == 0.
     """
-    # Apply mask
     masked_tensor = tensor * mask
 
-    # Sum over the specified dimension
     if dim is None:
         summed = masked_tensor.sum()
     else:
         summed = masked_tensor.sum(dim=dim)
 
-    # Normalize by constant
     normalized = summed / normalize_constant
 
     return normalized
 
 
 def sft_microbatch_train_step(
-    policy_log_probs: torch.Tensor,   # (B, T)
-    response_mask: torch.Tensor,      # (B, T) bool or 0/1
+    policy_log_probs: torch.Tensor, 
+    response_mask: torch.Tensor,   
     gradient_accumulation_steps: int,
     normalize_constant: float = 1.0,
 ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-    # 1. Calculate the negative log-likelihood (NLL) loss for each token.
     nll_loss_per_token = -policy_log_probs
 
-    # 2. Use the provided helper function to sum the loss and divide by normalize_constant.
-    # This correctly applies the normalization from the function's arguments.
     normalized_sum = masked_normalize(
         tensor=nll_loss_per_token,
         mask=response_mask,
@@ -165,16 +144,12 @@ def sft_microbatch_train_step(
         dim=None
     )
 
-    # 3. Get the batch size from the input tensor shape.
     batch_size = policy_log_probs.shape[0]
 
-    # 4. Apply the remaining scaling factors for batch size and gradient accumulation.
     loss = normalized_sum / (batch_size * gradient_accumulation_steps)
 
-    # 5. Perform the backward pass on the final loss.
     loss.backward()
 
-    # 6. Prepare the values to return.
     metadata = {}
 
     return loss.detach(), metadata
@@ -187,13 +162,13 @@ def log_generations(
     ground_truths: List[str],
     max_new_tokens: int = 60,
     device: str = 'cuda' if torch.cuda.is_available() else 'cpu'
-):  # type: ignore
+):  
     """
     Generates responses from a model for given prompts and logs detailed information,
     using the provided advanced math grader for reward calculation.
     """
     model.eval()
-    model.to(device) # pyright: ignore[reportArgumentType]
+    model.to(device)  # type: ignore
     log_data = []
 
     for prompt_text, ground_truth_text in zip(prompts, ground_truths):
@@ -267,7 +242,7 @@ def init_vllm(
             llm = LLM(
                 model=model_id,
                 tokenizer=(tokenizer_id or model_id),
-                dtype=torch.bfloat16,
+                dtype=torch.bfloat16, # type: ignore
                 enable_prefix_caching=True,
                 gpu_memory_utilization=gpu_memory_utilization,
                 seed=seed,
@@ -295,7 +270,7 @@ def load_policy_into_vllm_instance(
     # hard-stop the previous engine to free GPU:1
     try:
         if llm is not None and hasattr(llm, "shutdown"):
-            llm.shutdown()
+            llm.shutdown() # type: ignore
     except Exception as e:
         print(f"Warning: vLLM shutdown raised: {e}")
 
@@ -404,7 +379,7 @@ def evaluate(policy_model, vllm_instance, tokenizer, validation_data, eval_batch
         finally:
             # IMPORTANT: free GPU:1 immediately after eval
             try:
-                llm.shutdown()
+                llm.shutdown() # type: ignore
             except Exception as _e:
                 print(f"Warning: vLLM shutdown raised: {_e}")
             llm = None
@@ -437,7 +412,7 @@ def run_sft_experiment(args):
 
     # 1. LOAD MODEL AND TOKENIZER
     device = "cuda:0"
-    tokenizer = AutoTokenizer.from_pretrained(args.model_id)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_id, local_files_only=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     policy_model = AutoModelForCausalLM.from_pretrained(
@@ -545,4 +520,4 @@ if __name__ == "__main__":
     args.num_epochs = 1
     run_sft_experiment(args)
 
-   # CUDA_VISIBLE_DEVICES=0,1 python -m cs336_alignment.sft     --model_id "/home/zhangwj/Qwen2.5-Math-1.5B"     --train_file_path "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"     --test_file_path "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"
+   # CUDA_VISIBLE_DEVICES=0,1 python -m cs336_alignment.sft     --model_id "/data/Qwen2.5-Math-1.5B"     --train_file_path "/home/zhangwj/assignment5/data/gsm8k/train.jsonl"     --test_file_path "/home/zhangwj/assignment5/data/gsm8k/test.jsonl"

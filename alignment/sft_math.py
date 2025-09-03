@@ -119,7 +119,7 @@ def load_gsm8k_local() -> Tuple[List[Dict], List[Dict]]:
 #                      Model / Tokenizer
 # ============================================================
 
-MODEL_ID = "/home/zhangwj/Qwen2.5-Math-1.5B"
+MODEL_ID = "/data/Qwen2.5-Math-1.5B"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 def load_model_and_tokenizer():

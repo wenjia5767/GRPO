@@ -219,7 +219,7 @@ def main():
     num_epochs = 1
     save_path = "dpo_llama_model.pth"
     data_dir = "/home/zhangwj/hh-rlhf"
-    model_path = "/home/zhangwj/Llama-3.1-8B"
+    model_path = "/data/Llama-3.1-8B"
     # --- 2. Load Model and Tokenizer ---
     print("Loading model and tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(model_path)

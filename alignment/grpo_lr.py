@@ -78,7 +78,7 @@ loss_type: Literal[
 use_std_normalization: bool = True
 refresh_vllm_every: int = 1
 eval_every: int = 1
-model_path = "/home/zhangwj/Qwen2.5-Math-1.5B"
+model_path = "/data/Qwen2.5-Math-1.5B"
 
 # --- Assertions and Derived Configs ---
 assert train_batch_size % gradient_accumulation_steps == 0, (
