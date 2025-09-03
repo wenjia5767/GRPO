@@ -106,6 +106,142 @@
           * **监督式微调 (Supervised Fine-Tuning)**: 最根本的提升方法是在一批遵循此格式的问答数据上对模型进行微调，从而直接向模型“教授”这种结构化输出的技能。
 
 
+
+### 3. GRPO (Group Relative Policy Optimization) 
+
+GRPO 是一种用于强化学习（RL）的策略梯度算法，专门针对语言模型微调而设计。它的核心思想是通过简化**优势估计**和引入 **PPO 式的裁剪机制**来提高训练的稳定性和效率。
+
+---
+
+### 核心思想 (Core Ideas)
+
+GRPO 解决了传统 RL 算法在语言模型上遇到的两个主要挑战：
+
+#### 1. Group Normalized Advantage
+
+在传统的 RL 中，通常需要一个独立的价值网络 (value network) 作为基线来估计优势函数，这增加了训练的复杂性。GRPO 巧妙地解决了这个问题：
+
+* **方法**: 对于一个输入问题 $q$，它会使用当前策略 $\pi_{\theta}$ 采样一组 $G$ 个不同的回答 $\{o^{(i)}\}_{i=1}^G$。
+* **优势估计**: 优势值 $A^{(i)}$ 不再通过价值网络计算，而是通过对这组回答的奖励 $r^{(i)}$ 进行**Group Normalized Advantage**来得到。
+
+**公式**：
+
+$$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \text{advantage\_eps}}$$
+
+* $A^{(i)}$：第 $i$ 个回答的优势值。
+* $r^{(i)}$：第 $i$ 个回答的奖励。
+* $\text{mean}(r^{(G)})$ 和 $\text{std}(r^{(G)})$：这组回答的奖励均值和标准差。
+* $\text{advantage\_eps}$：一个很小的常数，用于防止除以零。
+
+#### 2. PPO式裁剪目标 (PPO-style Clipping Objective)
+
+GRPO 采用了与 PPO (Proximal Policy Optimization) 类似的裁剪机制，以限制策略更新的幅度，防止新策略与旧策略偏离太远，从而保证训练的稳定性。
+
+* **方法**: 它使用一个裁剪后的目标函数来优化策略。这个目标函数取重要性采样比率 $\frac{\pi_{\text{new}}}{\pi_{\text{old}}}$ 和一个被裁剪后的重要性采样比率的最小值。
+
+**公式**：
+
+$$\mathcal{L}(\theta) = \mathbb{E}_{q, \{o^{(i)}\} \sim \pi_{\theta_{\text{old}}}( \cdot | q)} \left[ \min \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)} A^{(i)}, \text{clip} \left( \frac{\pi_{\theta}(o^{(i)}|q)}{\pi_{\theta_{\text{old}}}(o^{(i)}|q)}, 1-\epsilon, 1+\epsilon \right) A^{(i)} \right) \right]$$
+
+* $\pi_{\theta}(new)$：当前策略，即要优化的新策略。
+* $\pi_{\theta_{\text{old}}}(old)$：生成回答（rollouts）的旧策略。
+* $A^{(i)}$：第 $i$ 个回答的组归一化优势值。
+* $\epsilon$：一个小的裁剪范围，通常设置为 0.1 或 0.2。
+
+---
+
+### 训练流程 (Training Workflow)
+
+典型的 GRPO 训练循环如下：
+
+1.  **数据生成 (Rollout)**: 使用**当前策略** $\pi_{\theta_{\text{old}}}$ 采样一批数据和它们的响应。
+2.  **优势计算**: 利用这批数据，计算每个响应的奖励并进行组归一化，得到优势值 $A^{(i)}$。
+3.  **策略优化**: 使用这些固定的数据，通过最大化 GRPO 目标函数 $\mathcal{L}(\theta)$，对策略 $\pi_{\theta}$ 进行**多次梯度更新**（例如，进行多个 epochs 的训练）。
+
+GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使得**离策略训练**成为可能，从而极大地提高了训练的数据利用效率。
+
+---
+
+## 📊 实验与结果分析
+
+我们进行了一系列对比实验来验证 GRPO 算法不同组件的有效性。
+
+#### 实验一：REINFORCE 基线对比 (Baseline vs. No Baseline)
+* **目的**: 验证在 REINFORCE 算法中使用基线（即，减去奖励的均值）对训练稳定性的影响。
+* **方法**: 分别设置 `loss_type='reinforce_with_baseline'` 和 `loss_type='no_baseline'` 进行了两次独立的训练。
+
+* #### 公式
+    **No Baseline (简单 REINFORCE)**:
+    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]$$
+    **With Baseline (本项目中的实现)**:
+    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]$$
+    其中 $R(o)$ 是奖励，$\pi_{\theta}(o|q)$ 是策略在该回答上的对数概率，$\text{mean}(R^{(G)})$ 是组奖励的均值。
+
+* **结果**:
+    `![REINFORCE 基线对比图](./grpo_run/eval_curve.png)`
+* **分析**: 从训练曲线可以看出，使用基线 (`reinforce_with_baseline`) 的版本收敛更稳定，最终达到的验证集准确率也更高。这证明了通过中心化奖励来降低方差的有效性，是策略梯度训练中不可或缺的一步。
+
+### 实验二：长度归一化方法对比 (`masked_mean` vs. `masked_normalize`)
+* **目的**: 比较两种不同的损失长度归一化方法对最终性能的影响。
+* **方法**: 分别设置 `length_normalization_type` 为 `masked_mean` 和 `masked_normalize` 进行了两次 GRPO 训练。
+
+* #### 公式
+    假设序列总损失为 $\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中 $|o|$ 是回答的 token 数量。
+    **masked_mean**:
+    $$\mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t$$
+    **masked_normalize**:
+    $$\mathcal{L}_{\text{masked\_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t$$
+    其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
+
+* **结果**:
+    *在此处插入你的对比图，例如:*
+    `![长度归一化对比图](path/to/your/length_norm_comparison_plot.png)`
+* **分析**: [**请在这里写下你的分析**。例如：两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。]
+
+### 实验三：优势标准化对比 (Std Normalization vs. Mean-Only)
+* **目的**: 验证在组归一化优势时，除了减去均值，再除以标准差（即优势标准化）是否能带来提升。
+* **方法**: 分别设置 `use_std_normalization=True` 和 `use_std_normalization=False` 进行了两次 GRPO 训练。
+
+* #### 公式
+    **Mean-Only Normalization**:
+    $$A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})$$
+    **Standard Deviation Normalization (GRPO 标准方法)**:
+    $$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}$$
+
+* **结果**:
+    *在此处插入你的对比图，例如:*
+    `![优势标准化对比图](path/to/your/std_norm_comparison_plot.png)`
+* **分析**: 实验结果表明，使用标准差进行归一化 (`True`) 能够进一步稳定优势的范围，使得学习过程对奖励的绝对大小不那么敏感，从而获得了更快的收敛速度和更高的最终准确率。
+
+### 实验四：离策略 (Off-Policy) GRPO 训练
+* **目的**: 实现并验证离策略 GRPO 训练的有效性。
+* **方法**: 在一次采样后，我们进行了 5 个周期的训练 (`epochs_per_rollout_batch=5`)。在后续周期，策略 $\pi_{\theta}$ 已经改变，但我们仍然使用第一个周期开始前计算的旧策略对数概率 `old_log_probs` 来计算裁剪损失。
+
+* #### 公式
+    离策略学习的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
+    $$\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$$   $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
+
+* **结果**:
+    *在此处插入你的训练日志图，例如:*
+    `![离策略训练图](path/to/your/off_policy_plot.png)`
+* **分析**: 离策略训练显著提高了数据利用率。从图中可以看到，在一次采样后，模型在多个周期的连续训练中，验证集准确率仍然能够持续提升。这证明了 GRPO-Clip 目标函数的稳定性，使其能够有效地利用离策略数据。
+
+### 实验五：GRPO-Clip 裁剪机制作用分析
+* **目的**: 验证 PPO 风格的裁剪机制在 GRPO 中的作用。
+* **方法**: 我们实现了一个不带裁剪的损失类型 `"GRPO-No-Clip"`，并将其与标准的 `"grpo_clip"` 损失进行了对比。
+
+* #### 公式
+    **GRPO-No-Clip (无裁剪)**:
+    $$\mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]$$
+    **GRPO-Clip (有裁剪)**:
+    $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
+
+* **结果**:
+    *在此处插入你的对比图，例如:*
+    `![裁剪机制对比图](path/to/your/clip_comparison_plot.png)`
+* **分析**: 对比实验清晰地显示，带有裁剪机制的 GRPO-Clip 训练过程远比未裁剪的版本要稳定。未裁剪的版本在训练中可能会出现剧烈的性能波动，而裁剪有效地将策略更新限制在一个信任域内，保证了学习过程的平稳进行。
+
+
 ## 使用指南 (Usage)
 
 ### 1. 准备数据 (Data Preparation)

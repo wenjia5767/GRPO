@@ -2,22 +2,15 @@ import gc
 import json
 import os
 import random
-import re
 import shutil
 import uuid
-from datetime import datetime
-from typing import Dict, List, Literal, Tuple
-
+from typing import Literal
 import matplotlib
 import matplotlib.pyplot as plt
 import torch
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import typer
 from torch.optim import AdamW
-from torch.utils.data import DataLoader, Dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from vllm import LLM, SamplingParams  # pyright: ignore[reportMissingImports]
+from vllm import LLM, SamplingParams
 
 # Ensure these helper modules are in your Python path
 from alignment.drgrpo_grader import r1_zero_reward_fn
