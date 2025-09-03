@@ -189,9 +189,13 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * #### 公式
     假设序列总损失为 $\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中 $|o|$ 是回答的 token 数量。
     **masked_mean**:
-    $$\mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t$$
+    ```math
+    \mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t
+    ```
     **masked_normalize**:
-    $$\mathcal{L}_{\text{masked\_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t$$
+    ```math
+    \mathcal{L}_{\text{masked\_normalize}} = \frac{1}{T_{\text{max}}} \sum_{t=1}^{|o|} \mathcal{L}_t
+    ```
     其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
 
 * **结果**:
@@ -231,10 +235,13 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **GRPO-No-Clip (无裁剪)**:
-    $$\mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]$$
+    ```math
+    \mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]
+    ```
     **GRPO-Clip (有裁剪)**:
-    $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
-
+    ```math
+    \mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]
+    ```
 * **结果**:
     ![裁剪机制对比图](./grpo_off_policy_noclip/eval_curve.png)
 * **分析**: 对比实验清晰地显示，带有裁剪机制的 GRPO-Clip 训练过程远比未裁剪的版本要稳定。未裁剪的版本在训练中可能会出现剧烈的性能波动，而裁剪有效地将策略更新限制在一个信任域内，保证了学习过程的平稳进行。
