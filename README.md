@@ -295,8 +295,21 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 ```
 
 * **结果**:
-    *在此处插入你的训练日志图，例如:*
-    ![离策略训练图](./grpo_off_policy/eval_curve.png)
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./grpo_run/eval_curve.png" alt="length norm" width="400">
+      <br>
+      On Policy No clip
+    </td>
+    <td align="center">
+      <img src="./grpo_off_policy/eval_curve.png" alt="normal" width="400">
+      <br>
+      Off Policy with Clip
+    </td>
+  </tr>
+</table>
+
 * **分析**: off policy训练显著提高了数据利用率。从图中可以看到，在一次采样后，模型在多个周期的连续训练中，验证集准确率仍然能够持续提升。这证明了 GRPO-Clip 目标函数的稳定性，使其能够有效地利用离策略数据。
 
 ### 实验五：GRPO-Clip 裁剪机制作用分析
