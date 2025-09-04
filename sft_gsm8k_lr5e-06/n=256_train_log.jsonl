@@ -2,3 +2,7 @@
 {"type": "train", "run": "n=256", "epoch": 1, "global_step": 1, "avg_loss": 0.42626953125, "time": 1756984611.4821668}
 {"type": "eval", "run": "n=256", "epoch": 1, "global_step": 1, "accuracy": 0.2221379833206975, "format_accuracy": 0.8119787717968158, "time": 1756984917.3200226}
 {"type": "train", "run": "n=256", "epoch": 1, "global_step": 2, "avg_loss": 0.42535400390625, "time": 1756984919.047762}
+{"type": "eval", "run": "n=256", "epoch": 1, "global_step": 2, "accuracy": 0.2350265352539803, "format_accuracy": 0.8324488248673237, "time": 1756985236.7596707}
+{"type": "train", "run": "n=256", "epoch": 1, "global_step": 3, "avg_loss": 0.388214111328125, "time": 1756985238.5190508}
+{"type": "eval", "run": "n=256", "epoch": 1, "global_step": 3, "accuracy": 0.2312357846853677, "format_accuracy": 0.8506444275966641, "time": 1756985557.783647}
+{"type": "train", "run": "n=256", "epoch": 1, "global_step": 4, "avg_loss": 0.39654541015625, "time": 1756985559.4974282}
