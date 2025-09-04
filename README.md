@@ -163,7 +163,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 ---
 
-## 使用GRPO算法提高大语言模型在GSM8K数据集上的数学推理能力
+### 使用GRPO算法提高大语言模型在GSM8K数据集上的数学推理能力
 
 ### 📊 实验与结果分析
 
@@ -347,4 +347,68 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 多 epoch 复用同一批轨迹时，策略偏移累积，𝜌 分布易出现重尾；无裁剪时更新幅度受个别大 𝜌 主导，导致方差与有效步长在尾段急剧放大，出现同时段 format_ok 与 accuracy 的失效。
 
 
-## 直接偏好优化 (DPO)
+-----
+
+# 使用Direct Preference Optimization(DPO) 微调 Llama-3.1-8B
+
+使用Direct Preference Optimization (DPO) 来微调 Llama-3.1-8B 模型。其目标是使模型的回答与人类偏好对齐，使其更有用、更无害，同时避免了传统“基于人类反馈的强化学习” (RLHF) 的复杂性。
+
+## 🧐 DPO
+
+直接偏好优化 (DPO) 是一种使语言模型与人类（或AI生成）的偏好对齐的方法。传统的 RLHF 方法需要先训练一个独立的奖励模型，然后使用强化学习（如 PPO）来优化语言模型。与此不同，DPO 提供了一种更直接、更稳定的对齐方案。
+
+DPO 的核心思想是使用一个偏好数据集，其中包含针对同一提示 (prompt) 的成对chosen(更受偏好的)和rejected(不受偏好的)。DPO 直接优化语言模型（**策略模型**），使其最大化生成chosen回答的概率，同时最小化生成rejected回答的概率。
+
+该优化过程由以下loss function指导：
+```math
+\mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\log\sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)}\right)
+```
+
+其中：
+
+  * $\\pi\_\\theta$ 是我们正在训练的 **策略模型 (policy model)**。
+  * $\\pi\_{\\text{ref}}$ 是一个固定的 **参考模型 (reference model)**（即微调前原始模型的副本）。
+  * $x$ 是输入的提示 (prompt)。
+  * $y\_w$ 是“获胜”或被选中的回答。
+  * $y\_l$ 是“落败”或被拒绝的回答。
+  * $\\beta$ 是一个超参数，用于控制模型偏离参考模型的惩罚强度。
+  * $\\sigma$ 是 Sigmoid 函数。
+
+简单来说，这个损失函数鼓励策略模型 ($\\pi\_\\theta$) 相对于参考模型 ($\\pi\_{\\text{ref}}$) 而言，为chosen回答 ($y\_w$) 分配更高的概率，同时为rejected回答 ($y\_l$) 分配更低的概率。
+
+-----
+
+### 关键组成部分：
+
+  * **模型**: `Llama-3.1-8B`
+
+    1.  **策略模型 (Policy Model)**: 这个模型作为policy被训练，其权重会根据偏好数据进行更新。它被放置在 `cuda:0` 上。
+    2.  **参考模型 (Reference Model)**: 这是原始模型的冻结副本，其权重不会被更新 (`requires_grad=False`)。它作为一个稳定的基线，防止策略模型在学习过程中过多地偏离其原始能力。它被放置在 `cuda:1` 上，以节省主 GPU 的显存。
+
+  * **数据集**: 使用了 [Anthropic HH-RLHF](https://huggingface.co/datasets/Anthropic/hh-rlhf) 数据集。数据经过处理，提取出单轮对话，最终形成 `(指令, chosen回答, rejected回答)` 的三元组。
+
+  * **训练过程**:
+
+      * **优化器**: 使用 `torch.optim.RMSprop`，学习率为 $1 \\times 10^{-6}$。
+      * **超参数 $\\beta$**: 设置为 `0.1`。
+      * **批处理 (Batching)**: 使用梯度累积来模拟 `64` 的批处理大小。代码会计算每个样本的损失，对其进行归一化，并在执行优化器步骤之前累积梯度。
+      * **硬件**: 该script专为多 GPU 环境设计，至少需要两块 GPU。
+
+### 验证指标：
+
+为了追踪训练进展，使用了一个简单直观的 **验证准确率 (validation accuracy)**。该指标衡量的是，在验证集中，策略模型能够正确地为“获胜”回答分配比“落败”回答更高的对数概率的样本比例。
+```math
+\text{准确率} = \frac{\sum_{i=1}^{N} \mathbb{I}(\log P(y_{w_i}|x_i) > \log P(y_{l_i}|x_i))}{N}
+其中 $\\mathbb{I}$ 是指示函数。
+```
+
+-----
+
+## 📊 结果
+
+策略模型在处理后的 HH-RLHF 数据集上训练了一个 epoch。在训练过程中，每 5 个训练步 (training steps) 检查一次验证准确率。
+    ![DPO训练准确度](./DPO_result/validation_accuracy_curve.png)
+
+  * 模型展现出清晰的学习趋势，准确率从初始的约 63% 上升至峰值的 **约 67%**。
+  * 这一结果表明，DPO 训练能够提高模型如何根据给定的偏好数据更好地区分受欢迎和不受欢迎的回答。
+  * 曲线中的波动是正常现象，反映了优化过程的动态性。
