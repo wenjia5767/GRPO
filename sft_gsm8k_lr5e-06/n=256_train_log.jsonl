@@ -14,3 +14,5 @@
 {"type": "train", "run": "n=256", "epoch": 2, "global_step": 7, "avg_loss": 0.40252685546875, "time": 1756986616.1894872}
 {"type": "eval", "run": "n=256", "epoch": 2, "global_step": 7, "accuracy": 0.2562547384382108, "format_accuracy": 0.9112964366944655, "time": 1756987006.112329}
 {"type": "train", "run": "n=256", "epoch": 2, "global_step": 8, "avg_loss": 0.36822509765625, "time": 1756987007.8264022}
+{"type": "eval", "run": "n=256", "epoch": 2, "global_step": 8, "accuracy": 0.2577710386656558, "format_accuracy": 0.9188779378316907, "time": 1756987412.7224205}
+{"type": "train", "run": "n=256", "epoch": 3, "global_step": 9, "avg_loss": 0.36248779296875, "time": 1756987414.4240735}
