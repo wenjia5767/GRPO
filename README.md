@@ -258,7 +258,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 **GRPO-Clip (有裁剪)**:
 ```math
 \mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]
-    ```
+```
 * **结果**:
     ![裁剪机制对比图](./grpo_off_policy_noclip/eval_curve.png)
 * **分析**: 对比实验清晰地显示，带有裁剪机制的 GRPO-Clip 训练过程远比未裁剪的版本要稳定。未裁剪的版本在训练中可能会出现剧烈的性能波动，而裁剪有效地将策略更新限制在一个信任域内，保证了学习过程的平稳进行。
