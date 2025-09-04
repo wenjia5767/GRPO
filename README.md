@@ -190,7 +190,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 **With Baseline**:
 ```math
-\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]
+\mathcal{L}(\theta) = - \mathbb{E} \left[ (\frac{R(o) - \text{mean}(R^{(G)})}{\text{std}(R^{(G)}) + \epsilon} - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]
 ```
 
 * **结果**:
