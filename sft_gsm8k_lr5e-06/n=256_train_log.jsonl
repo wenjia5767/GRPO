@@ -38,3 +38,4 @@
 {"type": "train", "run": "n=256", "epoch": 5, "global_step": 19, "avg_loss": 0.339111328125, "time": 1756991720.8399737}
 {"type": "eval", "run": "n=256", "epoch": 5, "global_step": 19, "accuracy": 0.10386656557998483, "format_accuracy": 0.8172858225928734, "time": 1756992182.9976263}
 {"type": "train", "run": "n=256", "epoch": 5, "global_step": 20, "avg_loss": 0.33941650390625, "time": 1756992184.7054462}
+{"type": "eval", "run": "n=256", "epoch": 5, "global_step": 20, "accuracy": 0.07657316148597422, "format_accuracy": 0.7217589082638363, "time": 1756992652.7356975}
