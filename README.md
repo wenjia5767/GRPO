@@ -171,10 +171,10 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
   * **模型**: `Qwen-2.5-Math-1.5B`
   * **数据集**: GSM8K (一个包含 8500 个高质量、语言多样的数学应用题的数据集)
-  * **数据生成 (Rollout)**: 使用一个高效的推理引擎 (vLLM) 从策略模型 (Policy Model) 中为每个问题（prompt）生成多组候选答案。
-  * **奖励计算 (Reward Calculation)**: 奖励计算 (Reward Calculation)。
+  * **数据生成 (Rollout)**: 使用高效推理引擎 (vLLM) 从 Policy Model 中为每个 prompt 生成多组候选答案。
+  * **奖励计算 (Reward Calculation)**: 对每个生成的答案进行评估，并计算其奖励（reward）。
   * **优势计算 (Advantage Calculation)**: 在每组候选答案内部进行奖励归一化（减去均值），计算出优势值 (advantage)。这是 GRPO 算法的核心，它通过组内对比来稳定训练过程。
-  * **模型更新 (Policy Update)**: 使用计算出的优势值，通过策略梯度方法更新模型参数。
+  * **模型更新 (Policy Update)**: 使用计算出的 advantage ，通过策略梯度方法更新模型参数。
 
 我们进行了一系列对比实验来验证 GRPO 算法不同组件的有效性。
 
@@ -194,7 +194,20 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 ```
 
 * **结果**:
-    ![REINFORCE 基线对比图](./grpo_run/eval_curve.png)
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./grpo_run/eval_curve.png" alt="REINFORCE" width="400">
+      <br>
+      REINFORCE
+    </td>
+    <td align="center">
+      <img src="./grpo_no_baseline/eval_curve.png" alt="with balseline" width="400">
+      <br>
+      with balseline
+    </td>
+  </tr>
+</table>
 * **分析**: 从训练曲线可以看出，使用基线 (`reinforce_with_baseline`) 的版本收敛更稳定，最终达到的验证集准确率也更高。这证明了通过中心化奖励来降低方差的有效性，是策略梯度训练中不可或缺的一步。
 
 ### 实验二：长度归一化方法对比 (`masked_mean` vs. `masked_normalize`)
