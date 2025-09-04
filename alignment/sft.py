@@ -180,9 +180,11 @@ def evaluate_with_vllm(
     
     if len(QAs_test) == 0:
         return 0.0, 0.0
+    
+    prompt_o, _ = make_r1_zero_format(QAs_test)
 
     # Use the original questions as prompts
-    prompts = [ex["Q"] for ex in QAs_test]
+    prompts = prompt_o
     # Use the final answer part for ground truth
     gts = [ex["A"] for ex in QAs_test]
     
@@ -205,8 +207,13 @@ def evaluate_with_vllm(
 def make_r1_zero_format(QAs):
     prompts, output = [], []
     for QA in QAs:
-        prompts.append("A conversation between User and Assistant. ... <think>") # Prompts content remains the same
-        output.append(f"{QA['R']}</think> <answer>{QA['A']}</answer>.\n")
+        prompts.append("A conversation between User and Assistant. The User asks a question, and the Assistant solves it. "
+                       "The Assistant first thinks about the reasoning process in the mind and then provides the User with the answer. "
+                       "The reasoning process is enclosed within <think> </think> and answer is enclosed within <answer> </answer> tags, "
+                       "respectively, i.e., <think> reasoning process here </think> <answer> answer here </answer>.\n"
+                        f"User: {QA['Q']}\n"
+                        "Assistant: <think>")
+        output.append(f"{QA['R']}</think><answer>{QA['A']}</answer>\n")
     return prompts, output
 
 
@@ -327,14 +334,11 @@ if __name__ == "__main__":
     for size in dataset_sizes:
         num_examples = len(prompt_output_pairs_full) if size == -1 else size
         run_label = f"n={num_examples}" 
-                # === 每个实验单独的训练日志(JSONL)与实时loss缓存 ===
         train_log_path = os.path.join(run_dir, f"{run_label}_train_log.jsonl")
-        # 若希望每次重跑都清空该 run 的日志，可取消下一行的注释
-        # if os.path.exists(train_log_path): os.remove(train_log_path)
         live_loss_steps: List[int] = []
         live_loss_values: List[float] = []
 
-        # ✨ 新增：断点续跑功能，如果某个实验已完成，则跳过 ✨
+        # ✨ 断点续跑功能，如果某个实验已完成，则跳过 ✨
         if run_label in all_results:
             print(f"\n{'='*25}\n⏭️ Skipping Experiment: {run_label} (already completed)\n{'='*25}")
             continue
@@ -403,7 +407,7 @@ if __name__ == "__main__":
                 model.train()
                 optimizer.zero_grad()
                 
-                # ✨ 修改：使用 TQDM 显示更多信息 ✨
+                # ✨ 使用 TQDM 显示更多信息 ✨
                 pbar = tqdm(train_dataloader, desc=f"Epoch {epoch+1}")
                 for step, batch in enumerate(pbar):
                     batch = {k: v.to(device) for k, v in batch.items()}
@@ -480,7 +484,7 @@ if __name__ == "__main__":
         
         finally:
             # 清理评估用的vLLM模型资源
-            if vllm_gen is not None: del vllm_gen
+            if vllm_gen is not None: del vllm_gen # type: ignore
             if _tmp_dir and os.path.exists(_tmp_dir): shutil.rmtree(_tmp_dir, ignore_errors=True)
             gc.collect()
             torch.cuda.empty_cache()
