@@ -232,7 +232,21 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 其中 $T_{\text{max}}$ 是当前批次中的最大序列长度。
 
 * **结果**:
-    ![长度归一化对比图](./grpo_length_norm/eval_curve.png)
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./grpo_run/eval_curve.png" alt="length norm" width="400">
+      <br>
+      Masked Mean
+    </td>
+    <td align="center">
+      <img src="./grpo_length_norm/eval_curve.png" alt="Masked Length Normalize" width="400">
+      <br>
+      Masked Length Normalize
+    </td>
+  </tr>
+</table>
+
 * **分析**: [两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。]
 
 ### 实验三：优势标准化对比 (Std Normalization vs. Mean-Only)
