@@ -211,8 +211,8 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * **分析**: 从训练曲线可以看出，使用基线 (`reinforce_with_baseline`) 的版本收敛更稳定，最终达到的验证集准确率也更高。With Baseline的模式方差更低，收敛更加稳定，且标准化后advantage的尺度基本恒定，避免了无基线时reward方差变化引起的忽大忽小的更新。而相比较下，REINFORCE提高训练步数，格式准确率有明显提高，答案准确率却无法提高，说明模型先学会输出模板，而对解题能力的credit需要更地方差的信号才能持续推进。
 
-### 实验二：长度归一化方法对比 (`masked_mean` vs. `masked_normalize`)
-* **目的**: 比较两种不同的损失长度归一化方法对最终性能的影响。
+### 实验二：长度Normalize方法对比 (`masked_mean` vs. `masked_normalize`)
+* **目的**: 比较两种不同的损失长度Normalize方法对最终性能的影响。
 * **方法**: 分别设置 `length_normalization_type` 为 `masked_mean` 和 `masked_normalize` 进行了两次 GRPO 训练。
 
 * #### 公式
@@ -249,8 +249,8 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * **分析**: 两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。
 
-### 实验三：优势标准化对比 (Std Normalization vs. Mean-Only)
-* **目的**: 验证在组归一化优势时，除了减去均值，再除以标准差（即优势标准化）是否能带来提升。
+### 实验三：Advantage标准化对比 (Std Normalization vs. Mean-Only)
+* **目的**: 验证在Group Normalize Advantage时，去掉除以标准差（即Advantage标准化）是否会对结果产生影响。
 * **方法**: 分别设置 `use_std_normalization=True` 和 `use_std_normalization=False` 进行了两次 GRPO 训练。
 
 * #### 公式
@@ -282,11 +282,11 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 * **分析**: 实验结果表明，使用标准差进行归一化 (`True`) 能够进一步稳定优势的范围，使得学习过程对奖励的绝对大小不那么敏感，从而获得了更快的收敛速度，但在该实验上测试集的准确度并没有明显的上升。
 
 ### 实验四：Off-Policy GRPO 训练
-* **目的**: 实现并验证离策略 GRPO 训练的有效性。
-* **方法**: 在一次采样后，我们进行了 5 个周期的训练 (`epochs_per_rollout_batch=5`)。在后续周期，策略 $\pi_{\theta}$ 已经改变，但我们仍然使用第一个周期开始前计算的旧策略对数概率 `old_log_probs` 来计算裁剪损失。
+* **目的**: 实现并验证off-policy GRPO 训练的有效性。
+* **方法**: 在一次采样后，进行了 5 个epoch的训练 (`epochs_per_rollout_batch=5`)。在后续epoch，策略 $\pi_{\theta}$ 已经改变，但仍然使用第一个周期开始前计算的旧策略对数概率 `old_log_probs` 来计算Clip损失。
 
 * #### 公式
-    off policy 的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
+    off policy 的另一核心是**重要性采样比率** $\rho(\theta)$，并将其应用在Clip目标中。
 ```math
 \rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}
 ```
@@ -314,8 +314,8 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 图中 Off-Policy 的早期快速提升符合“同批数据多次利用”的预期。中途振荡对应于策略偏移增大、ρ 触发裁剪的过渡期。随后趋稳说明总体仍保持在可控偏移范围内。
 
 ### 实验五：GRPO-Clip 裁剪机制作用分析
-* **目的**: 验证 PPO 风格的裁剪机制在 GRPO 中的作用。
-* **方法**: 我们实现了一个不带裁剪的损失类型 `"GRPO-No-Clip"`，并将其与标准的 `"grpo_clip"` 损失进行了对比。
+* **目的**: 验证 PPO 风格的Clip机制在 GRPO 中的作用。
+* **方法**: 实现了一个不带裁剪的损失类型 `"GRPO-No-Clip"`，并将其与标准的 `"grpo_clip"` 损失进行了对比。
 
 * #### 公式
 **GRPO-No-Clip (无裁剪)**:
