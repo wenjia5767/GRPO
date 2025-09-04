@@ -197,14 +197,14 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 <table style="width: 100%;">
   <tr>
     <td align="center">
-      <img src="./grpo_run/eval_curve.png" alt="REINFORCE" width="400">
-      <br>
-      With baseline
-    </td>
-    <td align="center">
-      <img src="./grpo_no_baseline/eval_curve.png" alt="with balseline" width="400">
+      <img src="./grpo_no_baseline/eval_curve.png" alt="With Balseline" width="400">
       <br>
       REINFORCE
+    </td>
+    <td align="center">
+      <img src="./grpo_run/eval_curve.png" alt="REINFORCE" width="400">
+      <br>
+      With Baseline
     </td>
   </tr>
 </table>
