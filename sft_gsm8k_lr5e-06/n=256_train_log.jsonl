@@ -26,3 +26,5 @@
 {"type": "train", "run": "n=256", "epoch": 4, "global_step": 13, "avg_loss": 0.371337890625, "time": 1756989069.1642797}
 {"type": "eval", "run": "n=256", "epoch": 4, "global_step": 13, "accuracy": 0.2312357846853677, "format_accuracy": 0.9423805913570887, "time": 1756989493.1650763}
 {"type": "train", "run": "n=256", "epoch": 4, "global_step": 14, "avg_loss": 0.353546142578125, "time": 1756989494.9091303}
+{"type": "eval", "run": "n=256", "epoch": 4, "global_step": 14, "accuracy": 0.2259287338893101, "format_accuracy": 0.9514783927217589, "time": 1756989922.4528008}
+{"type": "train", "run": "n=256", "epoch": 4, "global_step": 15, "avg_loss": 0.355438232421875, "time": 1756989924.1813326}
