@@ -247,7 +247,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
   </tr>
 </table>
 
-* **分析**: [两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。]
+* **分析**: 两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。
 
 ### 实验三：优势标准化对比 (Std Normalization vs. Mean-Only)
 * **目的**: 验证在组归一化优势时，除了减去均值，再除以标准差（即优势标准化）是否能带来提升。
@@ -264,7 +264,21 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 ```
 
 * **结果**:
-    ![优势标准化对比图](./grpo_nostd_norm/eval_curve.png)
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./grpo_nostd_norm/eval_curve.png" alt="length norm" width="400">
+      <br>
+      Mean Only Norm
+    </td>
+    <td align="center">
+      <img src="./grpo_run/eval_curve.png" alt="normal" width="400">
+      <br>
+      Standard Deviation Norm
+    </td>
+  </tr>
+</table>
+
 * **分析**: 实验结果表明，使用标准差进行归一化 (`True`) 能够进一步稳定优势的范围，使得学习过程对奖励的绝对大小不那么敏感，从而获得了更快的收敛速度和更高的最终准确率。
 
 ### 实验四：Off-Policy GRPO 训练
