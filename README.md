@@ -190,7 +190,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * #### 公式
 假设序列总损失为
 ```math
-$\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t
+\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t
 ```
 
 **masked_mean**:
@@ -227,7 +227,10 @@ $\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t
 
 * #### 公式
     离策略学习的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
-    $$\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$$   $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
+    
+    $$\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$$   
+    
+    $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
 
 * **结果**:
     *在此处插入你的训练日志图，例如:*
