@@ -172,12 +172,12 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * **方法**: 分别设置 `loss_type='reinforce_with_baseline'` 和 `loss_type='no_baseline'` 进行了两次独立的训练。
 
 * #### 公式
-    **No Baseline (简单 REINFORCE)**:
+**No Baseline (简单 REINFORCE)**:
 ```math
 \mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]
 ```
 
-    **With Baseline**:
+**With Baseline**:
 ```math
 \mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]
 ```
@@ -215,11 +215,11 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * **方法**: 分别设置 `use_std_normalization=True` 和 `use_std_normalization=False` 进行了两次 GRPO 训练。
 
 * #### 公式
-    **Mean-Only Normalization**:
+**Mean-Only Normalization**:
 ```math
 A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})
 ```
-    **Standard Deviation Normalization (GRPO 标准方法)**:
+**Standard Deviation Normalization (GRPO 标准方法)**:
 ```math
 A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 ```
@@ -251,13 +251,13 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 * **方法**: 我们实现了一个不带裁剪的损失类型 `"GRPO-No-Clip"`，并将其与标准的 `"grpo_clip"` 损失进行了对比。
 
 * #### 公式
-    **GRPO-No-Clip (无裁剪)**:
-    ```math
-    \mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]
-    ```
-    **GRPO-Clip (有裁剪)**:
-    ```math
-    \mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]
+**GRPO-No-Clip (无裁剪)**:
+```math
+\mathcal{L}_{\text{No-Clip}}(\theta) = - \mathbb{E} \left[ \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)} \cdot A \right]
+```
+**GRPO-Clip (有裁剪)**:
+```math
+\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]
     ```
 * **结果**:
     ![裁剪机制对比图](./grpo_off_policy_noclip/eval_curve.png)
