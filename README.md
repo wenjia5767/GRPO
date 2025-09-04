@@ -173,11 +173,14 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **No Baseline (简单 REINFORCE)**:
-    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]$$
+```math
+\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]
+```
 
     **With Baseline**:
-    $$\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]$$
-    其中 $R(o)$ 是奖励，$\pi_{\theta}(o|q)$ 是策略在该回答上的对数概率，$\text{mean}(R^{(G)})$ 是组奖励的均值。
+```math
+\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]
+```
 
 * **结果**:
     ![REINFORCE 基线对比图](./grpo_run/eval_curve.png)
@@ -205,7 +208,7 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * **结果**:
     ![长度归一化对比图](./grpo_length_norm/eval_curve.png)
-* **分析**: [**请在这里写下你的分析**。例如：两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。]
+* **分析**: [两种归一化方法在最终性能上差异不大，但 `masked_mean`（按有效 token 数量归一化）在理论上更精确，因为它不受最大长度 `max_length` 的影响。]
 
 ### 实验三：优势标准化对比 (Std Normalization vs. Mean-Only)
 * **目的**: 验证在组归一化优势时，除了减去均值，再除以标准差（即优势标准化）是否能带来提升。
@@ -213,9 +216,13 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 
 * #### 公式
     **Mean-Only Normalization**:
-    $$A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})$$
+```math
+A^{(i)} = r^{(i)} - \text{mean}(r^{(G)})
+```
     **Standard Deviation Normalization (GRPO 标准方法)**:
-    $$A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}$$
+```math
+A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
+```
 
 * **结果**:
     ![优势标准化对比图](./grpo_nostd_norm/eval_curve.png)
@@ -226,16 +233,18 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * **方法**: 在一次采样后，我们进行了 5 个周期的训练 (`epochs_per_rollout_batch=5`)。在后续周期，策略 $\pi_{\theta}$ 已经改变，但我们仍然使用第一个周期开始前计算的旧策略对数概率 `old_log_probs` 来计算裁剪损失。
 
 * #### 公式
-    离策略学习的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
-    
-    $$\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}$$   
-    
-    $$\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]$$
+    off policy 的核心是**重要性采样比率** $\rho(\theta)$，并将其应用在裁剪目标中。
+```math
+\rho(\theta) = \frac{\pi_{\theta}(o|q)}{\pi_{\theta_{\text{old}}}(o|q)}
+```
+```math
+\mathcal{L}_{\text{GRPO-Clip}}(\theta) = \mathbb{E} \left[ \min \left( \rho(\theta)A, \text{clip}(\rho(\theta), 1-\epsilon, 1+\epsilon)A \right) \right]
+```
 
 * **结果**:
     *在此处插入你的训练日志图，例如:*
     ![离策略训练图](./grpo_off_policy/eval_curve.png)
-* **分析**: 离策略训练显著提高了数据利用率。从图中可以看到，在一次采样后，模型在多个周期的连续训练中，验证集准确率仍然能够持续提升。这证明了 GRPO-Clip 目标函数的稳定性，使其能够有效地利用离策略数据。
+* **分析**: off policy训练显著提高了数据利用率。从图中可以看到，在一次采样后，模型在多个周期的连续训练中，验证集准确率仍然能够持续提升。这证明了 GRPO-Clip 目标函数的稳定性，使其能够有效地利用离策略数据。
 
 ### 实验五：GRPO-Clip 裁剪机制作用分析
 * **目的**: 验证 PPO 风格的裁剪机制在 GRPO 中的作用。
