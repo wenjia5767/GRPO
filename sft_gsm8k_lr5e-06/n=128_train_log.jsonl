@@ -1,0 +1,4 @@
+{"type": "eval", "run": "n=128", "epoch": 0, "global_step": 0, "accuracy": 0.0, "format_accuracy": 0.0, "time": 1756978385.0880146}
+{"type": "train", "run": "n=128", "epoch": 1, "global_step": 1, "avg_loss": 0.7540283203125, "time": 1756978387.1150827}
+{"type": "eval", "run": "n=128", "epoch": 1, "global_step": 1, "accuracy": 0.0, "format_accuracy": 0.0, "time": 1756978618.1935368}
+{"type": "train", "run": "n=128", "epoch": 1, "global_step": 2, "avg_loss": 0.7188720703125, "time": 1756978619.7534354}

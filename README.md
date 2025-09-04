@@ -174,7 +174,8 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * #### 公式
     **No Baseline (简单 REINFORCE)**:
     $$\mathcal{L}(\theta) = - \mathbb{E} \left[ R(o) \cdot \log \pi_{\theta}(o|q) \right]$$
-    **With Baseline (本项目中的实现)**:
+
+    **With Baseline**:
     $$\mathcal{L}(\theta) = - \mathbb{E} \left[ (R(o) - \text{mean}(R^{(G)})) \cdot \log \pi_{\theta}(o|q) \right]$$
     其中 $R(o)$ 是奖励，$\pi_{\theta}(o|q)$ 是策略在该回答上的对数概率，$\text{mean}(R^{(G)})$ 是组奖励的均值。
 
@@ -187,7 +188,11 @@ GRPO 的强大之处在于，它通过巧妙的优势估计和裁剪机制，使
 * **方法**: 分别设置 `length_normalization_type` 为 `masked_mean` 和 `masked_normalize` 进行了两次 GRPO 训练。
 
 * #### 公式
-假设序列总损失为$\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$，其中$|o|$是回答的 token 数量。
+假设序列总损失为
+$$\mathcal{L}_{\text{seq}} = \sum_{t=1}^{|o|} \mathcal{L}_t$$
+，其中
+$$|o|$$
+是回答的 token 数量。
 **masked_mean**:
 ```math
   \mathcal{L}_{\text{masked\_mean}} = \frac{1}{|o|} \sum_{t=1}^{|o|} \mathcal{L}_t
