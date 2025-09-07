@@ -2,16 +2,26 @@
 
 大语言模型（LLM）对齐项目，集成了监督微调（Supervised Fine-Tuning, SFT）、群体相对策略优化（Group Relative Policy Optimization, GRPO）和直接偏好优化（Direct Preference Optimization, DPO）三种方法。
 
+---
+
 ## 简介 (Introduction)
 
-本项目实现了包括SFT、GRPO和DPO在内的多种主流对齐算法，并提供了代码、训练脚本和评估流程。
+本项目系统性地探索并实现了大语言模型的三种核心对齐技术：监督微调 (SFT)、群体相对策略优化 (GRPO) 和直接偏好优化 (DPO)。项目从一个基线模型的零样本评测出发，逐步深入到不同对齐算法的实现、消融研究和性能分析，全面评估和对比了这些方法在特定任务上的有效性。
 
-### 主要内容
+### 本项目的主要工作与发现包括：
 
-* **SFT**：高效的监督微调实现。
-* **GRPO**：对Group Relative Policy Optimization算法的完整实现。
-* **DPO**：对Direct Preference Optimization算法的完整实现。
-* **评估脚本**：提供脚本用于评估模型性能。
+* **1. 零样本基线评测 (Zero-Shot Baseline)**：首先，在GSM8K数学推理任务上对 `Qwen-2.5-Math-1.5B` 进行了零样本评测。结果揭示了该模型在遵循复杂格式化指令上的严重不足（格式正确率仅2.5%），从而**确立了后续对齐工作的必要性**。
+
+* **2. 监督微调 (SFT) 的系统性研究**：通过在不同规模的GSM8K子集上进行SFT实验，我们验证了SFT能显著提升模型性能。更重要的是，实验揭示了模型在SFT过程中**普遍存在快速过拟合现象**，并证明了早停（Early Stopping）策略对于获得最佳泛化能力至关重要。
+
+* **3. GRPO算法的深度实现与消融研究**：我们不仅完整实现了GRPO算法，还通过一系列**对照实验（消融研究）**，深入分析了其内部关键组件的作用，包括：
+    * **基线（Baseline）** 对比策略梯度方差的影响。
+    * **优势函数标准化（Advantage Normalization）** 对收敛稳定性的作用。
+    * **离策略（Off-Policy）更新**与**PPO式裁剪（Clipping）** 机制在提升数据利用率和训练稳定性中的核心价值。
+
+* **4. DPO算法的实现与验证**：在 `Llama-3.1-8B` 模型和 `Anthropic HH-RLHF` 偏好数据集上，我们成功实现了直接偏好优化（DPO）。实验验证了DPO作为一种**无需强化学习**的轻量级对齐方法，能够有效引导模型学习人类偏好。
+
+---
 
 ### 硬件与实验环境
 
@@ -43,7 +53,7 @@
 
 -----
 
-### 1. Qwen-2.5-Math-1.5B模型在GSM8K数据集上的Zero-Shot评测
+## 1. Qwen-2.5-Math-1.5B模型在GSM8K数据集上的Zero-Shot评测
 
 ##### 评测 `Qwen-2.5-Math-1.5B` 模型在 **GSM8K** 数据集上的零样本数学推理能力。
 -----
@@ -485,7 +495,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 
 -----
 
-# 使用Direct Preference Optimization(DPO) 微调 Llama-3.1-8B
+## 4.使用Direct Preference Optimization(DPO) 微调 Llama-3.1-8B
 
 使用Direct Preference Optimization (DPO) 来微调 Llama-3.1-8B 模型。其目标是使模型的回答与人类偏好对齐，使其更有用、更无害，同时避免了传统“基于人类反馈的强化学习” (RLHF) 的复杂性。
 
