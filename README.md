@@ -107,13 +107,11 @@
 
 -----
 
-## 2. 基于 Qwen2.5-Math-1.5B 模型的 GSM8K 数据集 SFT 实验报告
+## 2. 基于 Qwen2.5-Math-1.5B 模型的 GSM8K 数据集 SFT
 
-本仓库包含了在 GSM8K 数学推理数据集上进行监督微调（Supervised Fine-Tuning, SFT）的实验代码与结果。项目的主要目标是分析训练数据集规模对模型性能的影响，并观察训练动态，特别是过拟合现象。
+在 GSM8K 数学推理数据集上进行监督微调（Supervised Fine-Tuning, SFT）, 主要目标是分析训练数据集规模对模型性能的影响，并观察训练动态，特别是过拟合现象。
 
-## 🎯 项目目标
-
-本项目的核心目标是在不同规模的 GSM8K 训练子集上微调 `Qwen2.5-Math-1.5B` 模型。通过追踪模型在不同训练步数下的验证准确率，我们旨在探究：
+核心目标是在不同规模的 GSM8K 训练子集上微调 `Qwen2.5-Math-1.5B` 模型。通过追踪模型在不同训练步数下的验证准确率探究：
 
 1.  模型在不同数据量下的学习速度
 2.  训练集规模、训练步数与模型泛化性能之间的关系。
@@ -123,13 +121,13 @@
 
 ### 模型与数据集
 
-  * **模型**: `Qwen2.5-Math-1.5B`，一个专为数学任务设计的模型。
-  * **数据集**: **GSM8K**，一个包含小学水平数学应用题的数据集。
-  * **数据格式化**: 每个样本都被格式化为一个特定的提示（Prompt），引导模型在 `<think>` 标签内生成思考过程（Chain-of-Thought），并在 `<answer>` 标签内给出最终的数值答案。这种结构化的格式有助于规范模型的推理路径。
+  * **模型**: `Qwen2.5-Math-1.5B`
+  * **数据集**: **GSM8K**
+  * **数据格式化**: 每个样本都被格式化为一个特定的提示（Prompt），引导模型在 `<think>` 标签内生成思考过程（Chain-of-Thought），并在 `<answer>` 标签内给出最终的数值答案。
 
 ### 训练流程
 
-模型使用标准的监督微调（SFT）目标进行训练，即最小化在目标回复（response tokens）上的**负对数似然损失**（Negative Log-Likelihood Loss）。训练脚本自动化地执行了一系列实验，每个实验使用不同数量的训练样本：
+使用标准的监督微调（SFT）目标进行训练，即最小化在目标回复（response tokens）上的**负对数似然损失**（Negative Log-Likelihood Loss）。每个实验使用不同数量的训练样本：
 
   * `n = 128`
   * `n = 256`
@@ -141,7 +139,7 @@
 
   * **评估框架**: 使用 `vLLM` 框架在独立的 GPU 上进行快速高效的文本生成和评估。
   * **评估指标**: 核心指标是**验证准确率**。如果模型生成的 `<answer>` 标签内的数值与标准答案完全匹配，则认为该回答正确。
-  * **评估频率**: 在整个训练过程中，会周期性地在测试集上评估模型性能，以绘制学习曲线。
+  * **评估频率**: 在训练过程中，周期性地在测试集上评估模型性能，以绘制学习曲线。
 
 -----
 
@@ -153,11 +151,80 @@
 
 以下图表分别展示了在不同训练集规模下，模型验证准确率随训练步数变化的曲线。
 
-| n=128 | n=256 |
-| :---: | :---: |
-|  |  |
-| **n=512** | **n=1024** |
-|  |  |
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/live_loss_n_128.png" alt="loss n=128" width="400">
+      <br>
+      loss n=128
+    </td>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/sft_experiment_n_128.png" alt="validation accuracy n=128" width="400">
+      <br>
+      validation accuracy n=128
+    </td>
+  </tr>
+</table>
+
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/live_loss_n_256.png" alt="loss n=128" width="400">
+      <br>
+      loss n=256
+    </td>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/sft_experiment_n_256.png" alt="validation accuracy n=128" width="400">
+      <br>
+      validation accuracy n=256
+    </td>
+  </tr>
+</table>
+
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/live_loss_n_512.png" alt="loss n=128" width="400">
+      <br>
+      loss n=512
+    </td>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/sft_experiment_n_512.png" alt="validation accuracy n=128" width="400">
+      <br>
+      validation accuracy n=512
+    </td>
+  </tr>
+</table>
+
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/live_loss_n_1024.png" alt="loss n=128" width="400">
+      <br>
+      loss n=1024
+    </td>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/sft_experiment_n_1024.png" alt="validation accuracy n=128" width="400">
+      <br>
+      validation accuracy n=1024
+    </td>
+  </tr>
+</table>
+
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/live_loss_n_7473.png" alt="loss n=128" width="400">
+      <br>
+      loss n=1024
+    </td>
+    <td align="center">
+      <img src="./sft_gsm8k_lr5e-06/sft_experiment_n_7473.png" alt="validation accuracy n=128" width="400">
+      <br>
+      validation accuracy n=1024
+    </td>
+  </tr>
+</table>
 
 ### 全局对比图
 
@@ -175,49 +242,8 @@
 
 -----
 
-## 🚀 如何运行
 
-### 依赖安装
-
-请确保已安装所需的 Python 库：
-
-```bash
-pip install torch transformers vllm matplotlib tqdm
-```
-
-### 执行命令
-
-您可以通过命令行运行训练和评估脚本。该脚本支持通过参数进行灵活配置。
-
-```bash
-# 运行脚本的示例命令
-python your_script_name.py \
-    --model_path "/path/to/your/Qwen2.5-Math-1.5B" \
-    --train_path "/path/to/gsm8k/train.jsonl" \
-    --test_path "/path/to/gsm8k/test.jsonl" \
-    --learning_rate 5e-6 \
-    --batch_size 2 \
-    --gradient_accumulation_steps 32 \
-    --num_epochs 5 \
-    --train_device_id 0 \
-    --gen_device_id 1
-```
-
------
-
-## 💻 代码概览
-
-所提供的 Python 脚本结构清晰，非常适合执行此类实验。其关键组件包括：
-
-  * `main` **主模块**: 组织整个工作流程，包括参数解析、数据加载、遍历不同数据集规模，并调用训练和评估函数。同时，它还负责日志记录和图表绘制。
-  * `tokenize_prompt_and_output`: 一个核心的预处理函数，负责为模型准备数据批次（batch）。它对 prompt 和 output 进行分词、填充至相同长度，并创建一个 `response_mask` 以确保损失仅在模型的回复部分计算。
-  * `sft_microbatch_train_step`: 封装了单个微批次（micro-batch）的前向传播和反向传播逻辑。
-  * `evaluate_with_vllm`: 一个独立的评估函数，它加载当前模型状态到 `vLLM`，为测试集生成输出，并计算准确率。
-  * `update_and_save_plots`: 一个实用的工具函数，用于动态生成并保存在训练过程中的性能图表，提供实时的可视化反馈。
-
-
-
-### 3. GRPO (Group Relative Policy Optimization) 
+## 3. GRPO (Group Relative Policy Optimization) 
 
 GRPO 是一种用于强化学习（RL）的策略梯度算法。它的核心思想是通过简化**优势估计**和引入 **PPO 式的裁剪机制**来提高训练的稳定性和效率。
 
