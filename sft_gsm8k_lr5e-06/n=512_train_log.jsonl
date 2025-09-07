@@ -68,3 +68,14 @@
 {"type": "train", "run": "n=512", "epoch": 5, "global_step": 34, "avg_loss": 0.3055419921875, "time": 1757007250.815084}
 {"type": "eval", "run": "n=512", "epoch": 5, "global_step": 34, "accuracy": 0.006823351023502654, "format_accuracy": 0.17816527672479152, "time": 1757007741.97026}
 {"type": "train", "run": "n=512", "epoch": 5, "global_step": 35, "avg_loss": 0.299041748046875, "time": 1757007743.7790182}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 35, "accuracy": 0.004548900682335102, "format_accuracy": 0.1607278241091736, "time": 1757008237.200915}
+{"type": "train", "run": "n=512", "epoch": 5, "global_step": 36, "avg_loss": 0.312530517578125, "time": 1757008238.9678094}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 36, "accuracy": 0.004548900682335102, "format_accuracy": 0.15845337376800606, "time": 1757008733.0051584}
+{"type": "train", "run": "n=512", "epoch": 5, "global_step": 37, "avg_loss": 0.305633544921875, "time": 1757008734.6601195}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 37, "accuracy": 0.00530705079605762, "format_accuracy": 0.14480667172100076, "time": 1757009227.9701366}
+{"type": "train", "run": "n=512", "epoch": 5, "global_step": 38, "avg_loss": 0.294769287109375, "time": 1757009229.6546538}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 38, "accuracy": 0.003032600454890068, "format_accuracy": 0.14025777103866566, "time": 1757009722.5188339}
+{"type": "train", "run": "n=512", "epoch": 5, "global_step": 39, "avg_loss": 0.299041748046875, "time": 1757009724.267611}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 39, "accuracy": 0.003032600454890068, "format_accuracy": 0.12964366944655042, "time": 1757010216.7750762}
+{"type": "train", "run": "n=512", "epoch": 5, "global_step": 40, "avg_loss": 0.307952880859375, "time": 1757010218.4825423}
+{"type": "eval", "run": "n=512", "epoch": 5, "global_step": 40, "accuracy": 0.001516300227445034, "format_accuracy": 0.11902956785443518, "time": 1757010712.044302}
