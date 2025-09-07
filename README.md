@@ -228,7 +228,7 @@
 
 ### 全局对比图
 
-此图将所有实验的验证准确率曲线放在一起进行对比。
+![全局对比](./sft_gsm8k_lr5e-06/sft_experiments_comparison.png)
 
 ### 核心发现 🧠
 
