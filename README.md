@@ -504,6 +504,16 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
   </tr>
 </table>
 
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./grpo_off_policy_noclip/grad_norm_comparison_log.png" alt="length norm" width="600">
+      <br>
+      Grad norm comparision
+    </td>
+  </tr>
+</table>
+
 * **分析**: 无裁剪：早期提升正常，但尾段在分布偏移累积后出现整体崩塌。
 有裁剪：更早到达高准确率；中期经历一次振荡后维持稳定，最终保持高 format_ok 与较高 accuracy。
 多 epoch 复用同一批轨迹时，策略偏移累积，𝜌 分布易出现重尾；无裁剪时更新幅度受个别大 𝜌 主导，导致方差与有效步长在尾段急剧放大，出现同时段 format_ok 与 accuracy 的失效。
