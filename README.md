@@ -507,7 +507,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 <table style="width: 100%;">
   <tr>
     <td align="center">
-      <img src="./grpo_off_policy_noclip/grad_norm_comparison_log.png" alt="length norm" width="600">
+      <img src="./grpo_off_policy_noclip/grad_norm_comparison_log.png" alt="length norm" width="900">
       <br>
       Grad norm comparision
     </td>
