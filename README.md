@@ -53,6 +53,14 @@
 
 -----
 
+| Track           | Model / Data               | Key Setting                 | Format OK ↑ |       EM Acc ↑ | Δ vs Zero-shot | Steps to Peak | GPU hours | Checkpoint |
+| --------------- | -------------------------- | --------------------------- | ----------: | -------------: | -------------: | ------------: | --------: | ---------- |
+| Zero-shot       | Qwen-2.5-Math-1.5B / GSM8K | r1\_zero prompt             |    **2.5%** |      **0.38%** |              — |             — |         — | logs ✔︎    |
+| SFT             | same                       | n=512 / LR=5e-6             |           … |              … |           +…pp |             … |         … | hf link    |
+| **GRPO + clip** | same                       | G=4, epochs\_per\_rollout=5 |           … |          **…** |       **+…pp** |             … |         … | hf link    |
+| DPO             | Llama-3.1-8B / HH-RLHF     | β=0.1                       |           — | ValAcc **67%** |           +4pp |             — |         — | hf link    |
+
+
 ## 1. Qwen-2.5-Math-1.5B模型在GSM8K数据集上的Zero-Shot评测
 
 ##### 评测 `Qwen-2.5-Math-1.5B` 模型在 **GSM8K** 数据集上的零样本数学推理能力。
