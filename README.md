@@ -53,12 +53,19 @@
 
 -----
 
-| Track           | Model / Data               | Key Setting                 | Format OK ↑ |       EM Acc ↑ | Δ vs Zero-shot | Steps to Peak | GPU hours | Checkpoint |
-| --------------- | -------------------------- | --------------------------- | ----------: | -------------: | -------------: | ------------: | --------: | ---------- |
-| Zero-shot       | Qwen-2.5-Math-1.5B / GSM8K | r1\_zero prompt             |    **2.5%** |      **0.38%** |              — |             — |         — | logs ✔︎    |
-| SFT             | same                       | n=512 / LR=5e-6             |           … |              … |           +…pp |             … |         … | hf link    |
-| **GRPO + clip** | same                       | G=4, epochs\_per\_rollout=5 |           … |          **…** |       **+…pp** |             … |         … | hf link    |
-| DPO             | Llama-3.1-8B / HH-RLHF     | β=0.1                       |           — | ValAcc **67%** |           +4pp |             — |         — | hf link    |
+| Track           | Model / Data               | Key Setting                 | Format OK ↑ |       EM Acc ↑ |  Steps to Peak |
+| --------------- | -------------------------- | --------------------------- | ----------: | -------------: |  ------------: |
+| Zero-shot       | Qwen-2.5-Math-1.5B / GSM8K | r1\_zero prompt             |    **2.5%** |      **0.38%** |              — |
+| SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=128 / LR=5e-6             |  **93.40%** |     **25.47%** |             10 |
+| SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=256 / LR=5e-6             |  **95.15%** |     **25.78%** |              8 |
+| SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=512 / LR=5e-6             |  **95.30%** |     **26.38%** |              8 |
+| SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=1024 / LR=5e-6            |   **94.39%**|      **26.38%**|              9 |
+| **GRPO + clip** | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |           … |          **…** |              … |
+| **GRPO no baseline** | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |           … |          **…** |              … |
+| **GRPO + clip** | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |           … |          **…** |              … |
+| **GRPO + clip** | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |           … |          **…** |              … |
+| **GRPO + clip** | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |           … |          **…** |              … |
+| DPO             | Llama-3.1-8B / HH-RLHF     | β=0.1                       |           — | ValAcc **67%** |              — |
 
 
 ## 1. Qwen-2.5-Math-1.5B模型在GSM8K数据集上的Zero-Shot评测

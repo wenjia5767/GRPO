@@ -1,0 +1,4 @@
+训练日志分析结果:
+==============================
+最高 accuracy: 0.257771 (在 global_step 8)
+最高 format_accuracy: 0.951478 (在 global_step 14)
