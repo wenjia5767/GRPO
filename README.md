@@ -60,11 +60,12 @@
 | SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=256 / LR=5e-6             |  **95.15%** |     **25.78%** |              8 |
 | SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=512 / LR=5e-6             |  **95.30%** |     **26.38%** |              8 |
 | SFT             | Qwen-2.5-Math-1.5B / GSM8K | n=1024 / LR=5e-6            |   **94.39%**|      **26.38%**|              9 |
-| GRPO no baseline| Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |   **99.01%**|     **15.24%** |            128 |
-| GRPO length norm| Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |   **99.47%**|     **80.36%** |            100 |
-| GRPO no std norm| Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |   **99.62%**|     **81.80%** |             87 |
-| GRPO off policy | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |   **99.84%**|     **81.34%** |             65 |
-| GRPO no clip    | Qwen-2.5-Math-1.5B / GSM8K | G=4, epochs\_per\_rollout=5 |   **99.69%**|     **83.16%** |             51 |
+| REINFORCE       | Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=1 |   **99.39%**|     **80.81%** |             85 |
+| GRPO no baseline| Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=1 |   **99.01%**|     **15.24%** |            128 |
+| GRPO length norm| Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=1 |   **99.47%**|     **80.36%** |            100 |
+| GRPO no std norm| Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=1 |   **99.62%**|     **81.80%** |             87 |
+| GRPO off policy | Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=5 |   **99.84%**|     **81.34%** |             65 |
+| GRPO no clip    | Qwen-2.5-Math-1.5B / GSM8K | G=8, epochs\_per\_rollout=5 |   **99.69%**|     **83.16%** |             51 |
 | DPO             | Llama-3.1-8B / HH-RLHF     | β=0.1                       |           — | ValAcc **67%** |              — |
 
 
