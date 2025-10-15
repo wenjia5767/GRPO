@@ -479,7 +479,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 <table style="width: 100%;">
   <tr>
     <td align="center">
-      <img src="./training_metrics.png" alt="length norm" width="400">
+      <img src="./training_metrics.png" alt="length norm" width="900">
       <br>
       entropy and clip fraction
     </td>
