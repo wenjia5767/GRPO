@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch.optim import AdamW
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from vllm import LLM, SamplingParams 
+from vllm import LLM, SamplingParams
 
 from alignment.drgrpo_grader import r1_zero_reward_fn
 from alignment.gsm8k_baseline import normalize_r1_zero_format
@@ -20,7 +20,7 @@ matplotlib.use("Agg")
 
 # --- Configuration & File Paths ---
 # Run dir & artifact paths
-RUN_NAME = os.environ.get("RUN_NAME", "grpo_off_policy_noclip")
+RUN_NAME = os.environ.get("RUN_NAME", "grpo_off_policy_entropy_clipfraction")
 CLEAR_OLD = os.environ.get("CLEAR_OLD", "0") == "1"
 
 run_dir = os.path.abspath(f"./{RUN_NAME}")
@@ -67,8 +67,7 @@ loss_type: Literal[
     "no_baseline",
     "reinforce_with_baseline",
     "grpo_clip",
-    "grpo_no_clip",
-] = "grpo_no_clip"
+] = "grpo_clip"
 use_std_normalization: bool = True
 refresh_vllm_every: int = 1
 eval_every: int = 1
@@ -90,23 +89,6 @@ assert train_batch_size >= group_size, (
     "train_batch_size must be greater than or equal to group_size"
 )
 n_microbatches_per_rollout_batch = rollout_batch_size // micro_train_batch_size
-
-def compute_grpo_no_clip_loss(
-    advantages: torch.Tensor,
-    policy_log_probs: torch.Tensor,
-    old_log_probs: torch.Tensor,
-) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
-    """Computes the unclipped GRPO loss."""
-    # This is the ratio: pi_theta / pi_theta_old
-    ratio = torch.exp(policy_log_probs - old_log_probs)
-
-    # This is the unclipped objective from the problem description
-    loss = -ratio * advantages
-
-    metadata = {
-        "ratio": ratio.mean(),
-    }
-    return loss, metadata
 
 
 # --- Helper Functions ---
@@ -193,10 +175,6 @@ def compute_policy_gradient_loss(
         loss, metadata = compute_grpo_clip_loss(
             advantages, policy_log_probs, old_log_probs, cliprange # type: ignore
         )  # pyright: ignore[reportArgumentType]
-    elif loss_type == "grpo_no_clip":  # <-- ADD THIS BLOCK
-        loss, metadata = compute_grpo_no_clip_loss(
-            advantages, policy_log_probs, old_log_probs # type: ignore
-        )  # pyright: ignore[reportArgumentType]
 
     return loss, metadata  # pyright: ignore[reportReturnType]
 
@@ -226,7 +204,7 @@ def masked_normalize(
         result = torch.sum(tensor_mask, dim=dim, keepdim=False) / constant_normalize # type: ignore
     else:
         result = torch.sum(tensor_mask) / constant_normalize # type: ignore
-    return result    
+    return result
 
 
 def grpo_microbatch_train_step(
@@ -437,7 +415,7 @@ if __name__ == "__main__":
                 return_tensors="pt",
                 add_special_tokens=False
             )
-            
+
             prompt_tokens_old = tokenizer(
                 repeated_prompts_chat_format, padding=False, truncation=False, add_special_tokens=False
             )
@@ -449,28 +427,28 @@ if __name__ == "__main__":
                 policy.eval()  # Set model to evaluation mode for this forward pass
                 input_ids_full = combined_tokens_old["input_ids"].to(device)
                 attention_mask_full = combined_tokens_old["attention_mask"].to(device)
-                
+
                 # Process in smaller chunks to avoid OOM
                 log_probs_chunks = []
                 # Use the same micro_train_batch_size for chunking
                 for i in range(0, input_ids_full.size(0), micro_train_batch_size):
                     chunk_end = i + micro_train_batch_size
-                    
+
                     # Get chunks of the input data
                     input_ids_chunk = input_ids_full[i:chunk_end]
                     attention_mask_chunk = attention_mask_full[i:chunk_end]
-                    
+
                     # Perform forward pass on the smaller chunk
                     outputs_chunk = policy(input_ids_chunk, attention_mask=attention_mask_chunk)
                     logits_chunk = outputs_chunk.logits[:, :-1, :]
                     labels_chunk = input_ids_chunk[:, 1:]
-                    
+
                     log_probs_full_chunk = torch.nn.functional.log_softmax(logits_chunk, dim=-1)
-                    
+
                     gathered_log_probs_chunk = torch.gather(
                         log_probs_full_chunk, 2, labels_chunk.unsqueeze(-1)
                     ).squeeze(-1)
-                    
+
                     log_probs_chunks.append(gathered_log_probs_chunk)
 
                 # Combine the results from all chunks into a single tensor
@@ -479,6 +457,10 @@ if __name__ == "__main__":
             print("✅ Data generation complete. Starting training.")
             policy.train()
             step_losses = []
+            # --- START: Initialize lists for new metrics ---
+            step_entropies = []
+            step_clipped_fractions = []
+            # --- END: Initialize lists for new metrics ---
             total_grad_norm = 0.0
 
             for epoch in range(epochs_per_rollout_batch):
@@ -500,14 +482,25 @@ if __name__ == "__main__":
                     logits = outputs.logits[:, :-1, :]
                     labels = input_ids[:, 1:]
                     log_probs_full = torch.nn.functional.log_softmax(logits, dim=-1)
+
+                    # --- START: Entropy Calculation ---
+                    # H(p) = - sum(p * log(p))
+                    # We use softmax to get p from logits
+                    probs_full = torch.nn.functional.softmax(logits, dim=-1)
+                    entropy_per_token = -torch.sum(probs_full * log_probs_full, dim=-1)
+                    # We only care about the entropy of the response part
+                    mean_entropy = masked_mean(entropy_per_token, response_mask)
+                    step_entropies.append(mean_entropy.item())
+                    # --- END: Entropy Calculation ---
+                    
                     gathered_log_probs = torch.gather(
                         log_probs_full, 2, labels.unsqueeze(-1)
                     ).squeeze(-1)
 
                     policy_log_probs = gathered_log_probs
-                
+
                     old_log_probs_micro = old_log_probs_full_batch[micro_batch_indices]
-                    
+
                     adv_dtype = gathered_log_probs.dtype
                     advantages_micro = advantages[micro_batch_indices].to(device).to(adv_dtype).unsqueeze(1)
                     raw_rewards_micro = raw_rewards[micro_batch_indices].to(device).to(adv_dtype).unsqueeze(1)
@@ -526,6 +519,12 @@ if __name__ == "__main__":
                         cliprange=cliprange,
                         length_normalization_type=length_normalization_type,
                     )
+
+                    # --- START: Collect clip percentage ---
+                    if "clipped_fraction" in metadata:
+                        step_clipped_fractions.append(metadata["clipped_fraction"].item())
+                    # --- END: Collect clip percentage ---
+                    
                     step_losses.append(float(loss.item()))
                     accum += 1
                     print(
@@ -557,6 +556,12 @@ if __name__ == "__main__":
             num_reward_ones = int((raw_rewards == 1).sum().item())
             num_reward_zeros = int((raw_rewards == 0).sum().item())
             mean_loss = float(sum(step_losses) / max(1, len(step_losses)))
+            
+            # --- START: Calculate mean of new metrics for logging ---
+            mean_entropy = float(sum(step_entropies) / max(1, len(step_entropies)))
+            # Handle case where loss is not 'grpo_clip' and list is empty
+            mean_clipped_fraction = float(sum(step_clipped_fractions) / max(1, len(step_clipped_fractions))) if step_clipped_fractions else 0.0
+            # --- END: Calculate mean of new metrics for logging ---
 
             if (step % eval_every == 0) or (step == n_grpo_steps):
                 acc, fmt = evaluate_with_vllm(
@@ -595,6 +600,10 @@ if __name__ == "__main__":
                         "eval_accuracy": acc,
                         "eval_format_ok_rate": fmt,
                         "grad_norm": total_grad_norm,  # type: ignore
+                        # --- START: Add new metrics to log dict ---
+                        "policy_entropy": mean_entropy,
+                        "clipped_fraction": mean_clipped_fraction,
+                        # --- END: Add new metrics to log dict ---
                     }
                 )
                 print(f"[EVAL] step={step} acc={acc:.3f} fmt={fmt:.3f} → {eval_plot_path}")
@@ -610,17 +619,24 @@ if __name__ == "__main__":
                         "eval_accuracy": None,
                         "eval_format_ok_rate": None,
                         "grad_norm": total_grad_norm,  # type: ignore
+                        # --- START: Add new metrics to log dict ---
+                        "policy_entropy": mean_entropy,
+                        "clipped_fraction": mean_clipped_fraction,
+                        # --- END: Add new metrics to log dict ---
                     }
                 )
 
             with open(train_log_path, "w", encoding="utf-8") as f:
                 json.dump(train_log, f, ensure_ascii=False, indent=2)
 
+            # --- START: Update print statement ---
             print(
                 f"[LOG] step={step} loss={mean_loss:.4f} "
                 f"train_r_mean={train_reward_mean:.3f} frac1={train_reward_frac_ones:.3f} "
+                f"entropy={mean_entropy:.3f} clip%={mean_clipped_fraction:.3f} "
                 f"grad_norm={total_grad_norm:.4f} (log → {train_log_path})" # type: ignore
             )
+            # --- END: Update print statement ---
 
         print("\nTraining finished.")
         os.makedirs(policy_outdir, exist_ok=True)
@@ -629,7 +645,7 @@ if __name__ == "__main__":
         print(f"💾 Saved final policy to: {policy_outdir}")
         print(f"🧾 Training log JSON: {train_log_path}")
         print(f"📈 Eval curve PNG: {eval_plot_path}")
-    finally:    
+    finally:
         print("\n🚨 Cleaning up VLLM instance and temporary files...")
         if 'vllm_gen' in locals():
             del vllm_gen # type: ignore

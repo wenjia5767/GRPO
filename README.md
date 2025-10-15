@@ -475,6 +475,17 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 * **分析**: Off-Policy with Clip 采用重要性采样比并对advantage进行裁剪。允许对同一批轨迹做多轮更新（提高数据利用率），通过裁剪抑制行为策略与当前策略分布偏移带来的高方差/过大更新。
 图中 Off-Policy 的早期快速提升符合“同批数据多次利用”的预期。中途振荡对应于策略偏移增大、ρ 触发裁剪的过渡期。随后趋稳说明总体仍保持在可控偏移范围内。
 
+* **熵   clip fraction**:
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <img src="./training_metrics.png" alt="length norm" width="400">
+      <br>
+      entropy and clip fraction
+    </td>
+  </tr>
+</table>
+
 ### 实验五：GRPO-Clip 裁剪机制作用分析
 * **目的**: 验证 PPO 风格的Clip机制在 GRPO 中的作用。
 * **方法**: 实现了一个不带裁剪的损失类型 `"GRPO-No-Clip"`，并将其与标准的 `"grpo_clip"` 损失进行了对比。
