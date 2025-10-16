@@ -462,7 +462,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
     <td align="center">
       <img src="./grpo_run/eval_curve.png" alt="length norm" width="400">
       <br>
-      On Policy No Clip
+      On Policy with Clip
     </td>
     <td align="center">
       <img src="./grpo_off_policy/eval_curve.png" alt="normal" width="400">
@@ -503,7 +503,7 @@ A^{(i)} = \frac{r^{(i)} - \text{mean}(r^{(G)})}{\text{std}(r^{(G)}) + \epsilon}
 <table style="width: 100%;">
   <tr>
     <td align="center">
-      <img src="./grpo_off_policy_noclip/eval_curve.png" alt="length norm" width="400">
+      <img src="./training_plot.png" alt="length norm" width="400">
       <br>
       Off Policy No Clip
     </td>

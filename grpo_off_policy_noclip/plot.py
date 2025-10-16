@@ -1,3 +1,13 @@
+import matplotlib.pyplot as plt
+import json
+
+# --- 第一步：请将您完整的训练数据粘贴在这里 ---
+# 您可以将其保存为一个 .json 文件然后读取，或者直接粘贴为字符串
+# 下面是一个直接粘贴为多行字符串的例子
+
+# 将您的数据替换下面的三引号之间的内容
+# 我已经将您提供的3步数据放入其中作为示例
+json_data_string = """
 [
   {
     "step": 1,
@@ -1100,3 +1110,46 @@
     "grad_norm": 0.0
   }
 ]
+"""
+
+# --- 第二步：运行下面的代码来生成图表文件 ---
+
+# 解析JSON数据
+try:
+    training_data = json.loads(json_data_string)
+except json.JSONDecodeError as e:
+    print(f"JSON数据格式错误: {e}")
+    exit()
+
+# 提取绘图所需的数据
+steps = [item['step'] for item in training_data]
+accuracies = [item['eval_accuracy'] for item in training_data]
+format_ok_rates = [item['eval_format_ok_rate'] for item in training_data]
+
+# 开始绘图
+plt.figure(figsize=(8, 6))
+
+# 绘制 accuracy 和 format_ok_rate 两条线
+plt.plot(steps, accuracies, label='accuracy')
+plt.plot(steps, format_ok_rates, label='format_ok')
+
+# 添加与示例图类似的标题和坐标轴标签
+plt.title('Evaluation on test.jsonl')
+plt.xlabel('step')
+plt.ylabel('rate')
+
+# 设置Y轴的范围
+plt.ylim(-0.05, 1.05)
+
+# 添加图例
+plt.legend()
+
+# 添加背景网格
+plt.grid(True, linestyle='--', alpha=0.6)
+
+# --- 修改部分 ---
+# 将图表保存为PNG文件，而不是显示它
+# 您可以修改 'training_plot.png' 为任何您想要的文件名
+plt.savefig('training_plot.png')
+
+print("图表已成功保存为 training_plot.png")
